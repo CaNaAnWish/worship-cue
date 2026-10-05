@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Worship Cue & Click - Live Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <style>
+    .sortable-ghost { opacity: 0.3; background-color: #3b82f6; }
+    .pulse-glow { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    button, input, select { touch-action: manipulation; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col select-none">
+
+  <!-- Header Bar -->
+  <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30 shadow-md">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">🎵</span>
+      <div>
+        <h1 class="text-base sm:text-lg font-bold text-white tracking-wide flex items-center gap-2">
+          Worship Cue & Click
+          <span id="wakeLockBadge" class="hidden text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">ระบบคิวเสียงพูดภาษาไทย & เมโทรนอมนำร่อง</p>
+      </div>
+    </div>
+
+    <!-- ส่วนตั้งค่าหลัก -->
+    <div class="flex items-center gap-2 flex-wrap text-xs">
+      
+      <!-- BPM & Tap พร้อมระบบล็อก -->
+      <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
+        <label class="text-slate-300 ml-1 font-medium">BPM:</label>
+        <input id="bpmInput" type="number" min="40" max="220" value="72" class="w-14 bg-slate-800 text-center font-bold text-amber-400 rounded px-1 py-1.5 border border-slate-600 focus:outline-none text-sm transition">
+        <button id="tapTempoBtn" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg transition active:scale-95 shadow">
+          TAP
+        </button>
+        <button id="lockTapBtn" onclick="toggleLockTempo()" class="px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1" title="ล็อก/ปลดล็อกการกด TAP และแก้ไข BPM">
+          <span id="lockIcon">🔓</span>
+          <span id="lockText" class="text-[10px] hidden sm:inline">ปลดล็อก</span>
+        </button>
+      </div>
+
+      <!-- Time Signature -->
+      <div class="flex items-center bg-slate-700/60 px-2.5 py-1.5 rounded-lg border border-slate-600">
+        <label class="text-slate-300 mr-1 font-medium">Time:</label>
+        <select id="timeSignatureSelect" class="bg-slate-800 text-white font-semibold rounded px-1.5 py-1 border border-slate-600 focus:outline-none">
+          <option value="4/4" selected>4/4</option>
+          <option value="6/8">6/8</option>
+          <option value="3/4">3/4</option>
+        </select>
+      </div>
+
+      <!-- Pre-Count -->
+      <div class="flex items-center bg-slate-700/60 px-2.5 py-1.5 rounded-lg border border-slate-600">
+        <label class="text-slate-300 mr-1 font-medium">นับนำ:</label>
+        <select id="preCountSelect" class="bg-slate-800 text-amber-300 font-semibold rounded px-1.5 py-1 border border-slate-600 focus:outline-none">
+          <option value="1" selected>1 ห้อง</option>
+          <option value="2">2 ห้อง</option>
+          <option value="0">ไม่นับนำ</option>
+        </select>
+      </div>
+
+      <!-- Pad Controls -->
+      <div class="flex items-center gap-1 bg-amber-950/40 border border-amber-600/50 p-1 rounded-lg">
+        <span class="text-amber-400 font-bold ml-1">🎹 Pad:</span>
+        <select id="padKeySelect" class="bg-slate-800 text-amber-300 font-bold rounded px-1.5 py-1 border border-slate-600 text-xs">
+          <option value="C">C</option>
+          <option value="C#">C#</option>
+          <option value="D">D</option>
+          <option value="Eb">Eb</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="F#">F#</option>
+          <option value="G">G</option>
+          <option value="Ab">Ab</option>
+          <option value="A">A</option>
+          <option value="Bb">Bb</option>
+          <option value="B">B</option>
+        </select>
+        <button id="togglePadBtn" onclick="togglePadSynth()" class="bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition">
+          เปิด Pad
+        </button>
+      </div>
+
+      <!-- Volume Controls -->
+      <div class="flex items-center gap-2 bg-slate-700/40 px-2.5 py-1.5 rounded-lg border border-slate-600">
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Click:</span>
+          <input type="range" id="clickVolumeSlider" min="0" max="1" step="0.05" value="0.8" class="w-12 h-1 accent-amber-400 cursor-pointer">
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Cue Vol:</span>
+          <input type="range" id="cueVolumeSlider" min="0" max="1" step="0.05" value="1.0" class="w-12 h-1 accent-sky-400 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- IEM Pan -->
+      <label class="flex items-center gap-1 cursor-pointer bg-slate-700/40 px-2.5 py-1.5 rounded-lg border border-slate-600 select-none">
+        <input type="checkbox" id="splitIEMCheckbox" class="w-4 h-4 accent-amber-500 rounded">
+        <span class="text-slate-300 font-medium">IEM Pan</span>
+      </label>
+
+      <!-- Render WAV -->
+      <button id="renderWavBtn" onclick="renderAudioWAVWithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-lg transition">
+        <span>💾</span> Export WAV
+      </button>
+
+    </div>
+  </header>
+
+  <!-- หน้าจอสถานะ Realtime -->
+  <section class="bg-slate-950 px-4 sm:px-6 py-4 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-3">
+    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+      <span class="text-slate-400">Section:</span>
+      <span id="displaySection" class="font-bold text-amber-400 bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-800/80 font-mono text-base sm:text-lg">-</span>
+      <span class="text-slate-400">Bar:</span>
+      <span id="displayBar" class="font-bold text-white bg-slate-800 px-3 py-1.5 rounded-lg font-mono text-base sm:text-lg">0 / 0</span>
+      <span id="repeatActiveTag" class="hidden text-xs bg-rose-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">🔁 วนท่อนเดิม</span>
+      <span id="holdClickBanner" class="hidden text-xs bg-purple-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">⏸ คลิกวนค้าง</span>
+      <span id="fpBanner" class="hidden text-xs bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-full pulse-glow">🕊️ FREE PRAISE</span>
+    </div>
+
+    <!-- บีต 1-4 ขนาดใหญ่ -->
+    <div class="flex items-center gap-2">
+      <span class="text-slate-400 mr-1 text-xs">Beat:</span>
+      <div id="beat1" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">1</div>
+      <div id="beat2" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">2</div>
+      <div id="beat3" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">3</div>
+      <div id="beat4" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">4</div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-slate-400 text-xs">คิวเสียงภาษาไทย:</span>
+      <span id="displayCue" class="font-mono bg-slate-800 text-sky-400 px-4 py-1.5 rounded-lg border border-slate-700 min-w-[120px] text-center font-bold text-sm sm:text-base">-</span>
+    </div>
+  </section>
+
+  <!-- ปุ่ม Action หน้าเวที -->
+  <section class="bg-slate-950/80 px-4 py-2.5 border-b border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <button id="playBtn" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
+      <span class="text-lg">▶</span> เริ่มเล่น
+    </button>
+    <button id="stopBtn" class="bg-rose-700 active:bg-rose-600 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
+      <span class="text-lg">⏹</span> หยุด
+    </button>
+    <button id="repeatSectionBtn" onclick="toggleRepeatSection()" class="bg-slate-700 active:bg-slate-600 text-amber-300 font-bold py-3 rounded-xl border border-slate-600 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
+      <span class="text-base">🔁</span> วนท่อนเดิม (R)
+    </button>
+    <button id="triggerNextSongBtn" onclick="triggerNextSongAction()" class="bg-indigo-900/80 active:bg-indigo-700 text-indigo-100 font-bold py-3 rounded-xl border border-indigo-500/80 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
+      <span class="text-base">⏭</span> ส่งเข้าเพลงถัดไป
+    </button>
+  </section>
+
+  <!-- แผง Free Praise -->
+  <div id="freePraiseControlPanel" class="bg-indigo-950/60 border-b border-indigo-800/60 px-4 sm:px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs">
+    <div class="flex items-center gap-2">
+      <button id="toggleFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm active:scale-95">
+        <span>🕊️</span> เปิด Free Praise (F)
+      </button>
+      <span class="text-slate-400 hidden sm:inline">คลิกจะวนลูปต่อเนื่องเพื่อให้นมัสการอิสระ</span>
+    </div>
+
+    <div id="fpExitControls" class="hidden items-center gap-2 flex-wrap">
+      <span class="text-amber-300 font-bold">ส่งออกจาก Free เข้าท่อน:</span>
+      <div id="fpTargetButtons" class="flex items-center gap-1.5 flex-wrap"></div>
+    </div>
+  </div>
+
+  <!-- Workspace 3 Columns -->
+  <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
+    <!-- Setlist -->
+    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-bold text-xs text-slate-200 flex items-center gap-1.5">
+          <span>📋</span> รายการเพลง (Setlist)
+        </h2>
+        <div class="flex items-center gap-1">
+          <button onclick="addNewSong()" class="text-[11px] bg-indigo-600 active:bg-indigo-500 text-white font-medium px-2.5 py-1.5 rounded transition">+ เพิ่ม</button>
+          <button onclick="exportJSON()" class="text-[11px] bg-slate-700 active:bg-slate-600 text-slate-300 px-2.5 py-1.5 rounded border border-slate-600">Export</button>
+          <button onclick="triggerImportJSON()" class="text-[11px] bg-slate-700 active:bg-slate-600 text-slate-300 px-2.5 py-1.5 rounded border border-slate-600">Import</button>
+          <input type="file" id="importFileInput" class="hidden" accept=".json" onchange="importJSON(event)">
+        </div>
+      </div>
+      <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[520px] pr-1"></div>
+    </div>
+
+    <!-- Sections Palettes -->
+    <div class="md:col-span-3 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-4">
+      <div>
+        <h2 class="font-bold text-xs text-slate-200 mb-2">🏷️ Sections (แตะเพิ่มลงไทม์ไลน์)</h2>
+        <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+          <button onclick="addSection('Intro', 4)" class="bg-slate-700 active:bg-slate-600 text-left p-2.5 rounded-lg border border-slate-600 text-white transition active:scale-95">Intro (4)</button>
+          <button onclick="addSection('Verse 1', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 1 (8)</button>
+          <button onclick="addSection('Verse 2', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 2 (8)</button>
+          <button onclick="addSection('Verse 3', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 3 (8)</button>
+          <button onclick="addSection('Verse 4', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 4 (8)</button>
+          <button onclick="addSection('Pre-Chorus', 4)" class="bg-cyan-900/60 active:bg-cyan-800 text-left p-2.5 rounded-lg border border-cyan-700 text-cyan-200 transition active:scale-95">Pre-Chorus (4)</button>
+          <button onclick="addSection('Chorus', 8)" class="bg-amber-900/60 active:bg-amber-800 text-left p-2.5 rounded-lg border border-amber-700 text-amber-200 transition active:scale-95">Chorus (8)</button>
+          <button onclick="addSection('Bridge', 8)" class="bg-purple-900/60 active:bg-purple-800 text-left p-2.5 rounded-lg border border-purple-700 text-purple-200 transition active:scale-95">Bridge (8)</button>
+          <button onclick="addSection('Interlude', 4)" class="bg-emerald-900/60 active:bg-emerald-800 text-left p-2.5 rounded-lg border border-emerald-700 text-emerald-200 transition active:scale-95">Interlude (4)</button>
+          <button onclick="addSection('Outro', 4)" class="bg-fuchsia-900/60 active:bg-fuchsia-800 text-left p-2.5 rounded-lg border border-fuchsia-700 text-fuchsia-200 transition active:scale-95">Outro (4)</button>
+          <button onclick="addSection('Ending', 4)" class="bg-rose-900/60 active:bg-rose-800 text-left p-2.5 rounded-lg border border-rose-700 text-rose-200 transition active:scale-95">Ending (4)</button>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-700 pt-3">
+        <h2 class="font-bold text-xs text-slate-200 mb-1">⚡ Dynamic Cues (บีตที่ 2)</h2>
+        <p class="text-[11px] text-slate-400 mb-2">ตัวอย่างเสียงส่ง: <span class="text-amber-300">"คอรัส - Build Up - สาม - สี่"</span></p>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-amber-950/60 border border-amber-600/60 p-2 rounded-lg text-amber-300 font-medium">🔥 All In (พร้อมกัน)</div>
+          <div class="bg-blue-950/60 border border-blue-600/60 p-2 rounded-lg text-blue-300 font-medium">📈 Build Up</div>
+          <div class="bg-teal-950/60 border border-teal-600/60 p-2 rounded-lg text-teal-300 font-medium">💧 Down (เบาลง)</div>
+          <div class="bg-purple-950/60 border border-purple-600/60 p-2 rounded-lg text-purple-300 font-medium">🔁 Repeat (วนซ้ำ)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="md:col-span-5 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <h2 class="font-bold text-xs text-slate-200">🎼 Arrangement Timeline</h2>
+          <span id="currentSongTitleHeader" class="text-xs bg-slate-700 text-amber-400 px-2 py-0.5 rounded font-bold font-mono"></span>
+        </div>
+        <span class="text-xs text-slate-400">ลากการ์ดสลับตำแหน่งได้</span>
+      </div>
+      <div id="timelineContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[520px] pr-1"></div>
+    </div>
+  </main>
+
+  <script>
+    const thaiVoiceMap = {
+      "Intro": "อินโทร",
+      "Verse 1": "เวิร์ส 1",
+      "Verse 2": "เวิร์ส 2",
+      "Verse 3": "เวิร์ส 3",
+      "Verse 4": "เวิร์ส 4",
+      "Pre-Chorus": "ปรีคอรัส",
+      "Chorus": "คอรัส",
+      "Bridge": "บริดจ์",
+      "Interlude": "ท่อนส่ง",
+      "Outro": "เอาต์โทร",
+      "Ending": "ท่อนจบ",
+      "พร้อมกัน": "พร้อมกัน",
+      "Build Up": "บิวด์อัพ",
+      "เบาลง": "เบาลง",
+      "วนซ้ำ": "วนซ้ำ",
+      "nextSong": "เพลงถัดไป",
+      "จบเพลง": "จบเพลง"
+    };
+
+    const thaiNumbers = { 1: "หนึ่ง", 2: "สอง", 3: "สาม", 4: "สี่" };
+
+    const keyFrequencies = {
+      "C": [130.81, 196.00, 261.63],
+      "C#": [138.59, 207.65, 277.18],
+      "D": [146.83, 220.00, 293.66],
+      "Eb": [155.56, 233.08, 311.13],
+      "E": [164.81, 246.94, 329.63],
+      "F": [174.61, 261.63, 349.23],
+      "F#": [185.00, 277.18, 369.99],
+      "G": [196.00, 293.66, 392.00],
+      "Ab": [207.65, 311.13, 415.30],
+      "A": [220.00, 330.00, 440.00],
+      "Bb": [233.08, 349.23, 466.16],
+      "B": [246.94, 369.99, 493.88]
+    };
+
+    const defaultSetlist = [
+      {
+        id: "song_1",
+        title: "Way Maker",
+        bpm: 68,
+        timeSignature: "4/4",
+        padKey: "E",
+        transitionMode: "hold_click",
+        sections: [
+          { id: "s1", name: "Intro", bars: 4, dynamicCue: "" },
+          { id: "s2", name: "Verse 1", bars: 8, dynamicCue: "" },
+          { id: "s3", name: "Chorus", bars: 8, dynamicCue: "พร้อมกัน" },
+          { id: "s4", name: "Outro", bars: 4, dynamicCue: "" },
+          { id: "s5", name: "Ending", bars: 4, dynamicCue: "" }
+        ]
+      },
+      {
+        id: "song_2",
+        title: "พระเจ้ายิ่งใหญ่ (Goodness of God)",
+        bpm: 72,
+        timeSignature: "4/4",
+        padKey: "G",
+        transitionMode: "stop",
+        sections: [
+          { id: "s6", name: "Intro", bars: 4, dynamicCue: "" },
+          { id: "s7", name: "Verse 1", bars: 8, dynamicCue: "" },
+          { id: "s8", name: "Chorus", bars: 8, dynamicCue: "Build Up" },
+          { id: "s9", name: "Ending", bars: 4, dynamicCue: "" }
+        ]
+      }
+    ];
+
+    let setlist = [];
+    try {
+      const saved = localStorage.getItem('worship_cue_setlist_v8_voice');
+      setlist = saved ? JSON.parse(saved) : defaultSetlist;
+    } catch(e) {
+      setlist = defaultSetlist;
+    }
+
+    let currentSongIndex = 0;
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem('worship_cue_setlist_v8_voice', JSON.stringify(setlist));
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    let audioCtx = null;
+    let isPlaying = false;
+    let isPreCounting = false;
+    let preCountBarsRemaining = 0;
+    let isFreePraise = false;
+    let isHoldingClick = false;
+    let isRepeatCurrentQueued = false;
+    let isNextSongQueued = false;
+    let queuedNextSectionIndex = null;
+    let timerID = null;
+
+    let currentSectionIdx = 0;
+    let currentBar = 1;
+    let currentBeat = 1;
+    let nextNoteTime = 0.0;
+    const lookaheadMs = 25.0;
+    const scheduleAheadSec = 0.1;
+
+    let isPadPlaying = false;
+    let padOscillators = [];
+    let padGainNode = null;
+
+    // ระบบล็อก Tempo / TAP
+    let isTempoLocked = false;
+    function toggleLockTempo() {
+      isTempoLocked = !isTempoLocked;
+      const bpmInput = document.getElementById('bpmInput');
+      const tapBtn = document.getElementById('tapTempoBtn');
+      const lockIcon = document.getElementById('lockIcon');
+      const lockText = document.getElementById('lockText');
+      const lockBtn = document.getElementById('lockTapBtn');
+
+      if (isTempoLocked) {
+        bpmInput.disabled = true;
+        bpmInput.classList.add('opacity-50', 'cursor-not-allowed');
+        tapBtn.disabled = true;
+        tapBtn.classList.add('opacity-50', 'pointer-events-none');
+        lockIcon.innerText = "🔒";
+        lockText.innerText = "ล็อกแล้ว";
+        lockBtn.className = "px-2 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500 text-amber-300 font-bold transition flex items-center gap-1";
+      } else {
+        bpmInput.disabled = false;
+        bpmInput.classList.remove('opacity-50', 'cursor-not-allowed');
+        tapBtn.disabled = false;
+        tapBtn.classList.remove('opacity-50', 'pointer-events-none');
+        lockIcon.innerText = "🔓";
+        lockText.innerText = "ปลดล็อก";
+        lockBtn.className = "px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1";
+      }
+    }
+
+    let wakeLockSentinel = null;
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          document.getElementById('wakeLockBadge').classList.remove('hidden');
+        } catch (err) {}
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLockSentinel) {
+        wakeLockSentinel.release().then(() => {
+          wakeLockSentinel = null;
+          document.getElementById('wakeLockBadge').classList.add('hidden');
+        });
+      }
+    }
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Pad Synth
+    function togglePadSynth() {
+      ensureAudioContext();
+      isPadPlaying ? stopPadSynth() : startPadSynth();
+    }
+
+    function startPadSynth() {
+      if (isPadPlaying) return;
+      ensureAudioContext();
+
+      const key = document.getElementById('padKeySelect').value;
+      const freqs = keyFrequencies[key] || keyFrequencies["C"];
+      padGainNode = audioCtx.createGain();
+      padGainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      padGainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 2.5);
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(550, audioCtx.currentTime);
+
+      padGainNode.connect(filter);
+      filter.connect(audioCtx.destination);
+
+      padOscillators = freqs.map((f, i) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = (i % 2 === 0) ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+        osc.connect(padGainNode);
+        osc.start();
+        return osc;
+      });
+
+      isPadPlaying = true;
+      const btn = document.getElementById('togglePadBtn');
+      btn.className = "bg-amber-500 active:bg-amber-400 text-slate-950 font-bold px-2.5 py-1 rounded transition shadow";
+      btn.innerText = "ปิด Pad";
+    }
+
+    function stopPadSynth() {
+      if (!isPadPlaying || !padGainNode) return;
+      padGainNode.gain.setValueAtTime(padGainNode.gain.value, audioCtx.currentTime);
+      padGainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+
+      setTimeout(() => {
+        padOscillators.forEach(osc => osc.stop());
+        padOscillators = [];
+        isPadPlaying = false;
+        const btn = document.getElementById('togglePadBtn');
+        btn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition";
+        btn.innerText = "เปิด Pad";
+      }, 1600);
+    }
+
+    // Tap Tempo
+    let tapTimes = [];
+    document.getElementById('tapTempoBtn').onclick = () => {
+      if (isTempoLocked) return;
+      const now = performance.now();
+      tapTimes.push(now);
+      if (tapTimes.length > 4) tapTimes.shift();
+
+      if (tapTimes.length >= 2) {
+        let intervals = [];
+        for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i - 1]);
+        const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        let bpm = Math.round(60000 / avg);
+        bpm = Math.min(Math.max(bpm, 40), 220);
+        document.getElementById('bpmInput').value = bpm;
+        if (setlist[currentSongIndex]) {
+          setlist[currentSongIndex].bpm = bpm;
+          saveToStorage();
+          renderSetlist();
+        }
+      }
+    };
+
+    // --- ระบบเสียงพูดพากย์ภาษาไทย ปรับแต่งแก้บั๊กบน iOS/iPadOS และ Android ---
+    window._speechQueueRef = [];
+
+    function speakThaiCue(text) {
+      if (!('speechSynthesis' in window)) return;
+
+      const cueVol = parseFloat(document.getElementById('cueVolumeSlider').value) || 1.0;
+      if (cueVol <= 0.01) return;
+
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'th-TH';
+      utterance.rate = 1.35;
+      utterance.pitch = 1.0;
+      utterance.volume = cueVol;
+
+      // ผูกอ็อบเจ็กต์เข้ากับ Array ใน Global scope เพื่อป้องกัน Mobile GC เก็บกวาดขณะยังไม่จบประโยค
+      window._speechQueueRef.push(utterance);
+
+      utterance.onend = () => {
+        const idx = window._speechQueueRef.indexOf(utterance);
+        if (idx > -1) window._speechQueueRef.splice(idx, 1);
+      };
+
+      utterance.onerror = () => {
+        const idx = window._speechQueueRef.indexOf(utterance);
+        if (idx > -1) window._speechQueueRef.splice(idx, 1);
+        window.speechSynthesis.resume();
+      };
+
+      const voices = window.speechSynthesis.getVoices();
+      const thaiVoice = voices.find(v => v.lang === 'th-TH' || v.lang.startsWith('th') || v.lang.includes('Thai'));
+      if (thaiVoice) utterance.voice = thaiVoice;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function playClickSound(time, isAccent, splitIEM) {
+      const clickVol = parseFloat(document.getElementById('clickVolumeSlider').value) || 0.8;
+      if (clickVol <= 0.01) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(isAccent ? 2200 : 1200, time);
+      gain.gain.setValueAtTime(clickVol, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+      if (splitIEM && typeof audioCtx.createStereoPanner === 'function') {
+        const panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(-1.0, time); // ออกหูซ้าย 100%
+        osc.connect(gain);
+        gain.connect(panner);
+        panner.connect(audioCtx.destination);
+      } else {
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+      }
+
+      osc.start(time);
+      osc.stop(time + 0.045);
+    }
+
+    function toggleRepeatSection() {
+      isRepeatCurrentQueued = !isRepeatCurrentQueued;
+      const tag = document.getElementById('repeatActiveTag');
+      const btn = document.getElementById('repeatSectionBtn');
+      if (isRepeatCurrentQueued) {
+        tag.classList.remove('hidden');
+        btn.classList.add('bg-amber-600', 'text-slate-950');
+      } else {
+        tag.classList.add('hidden');
+        btn.classList.remove('bg-amber-600', 'text-slate-950');
+      }
+    }
+
+    function triggerNextSongAction() {
+      if (currentSongIndex >= setlist.length - 1) {
+        alert('เพลงนี้คือเพลงสุดท้ายใน Setlist แล้ว');
+        return;
+      }
+      isNextSongQueued = true;
+      updateCueDisplay('เตรียมเข้าเพลงถัดไป');
+    }
+
+    function scheduleBeat(beatNumber, time) {
+      const curSong = setlist[currentSongIndex];
+      const splitIEM = document.getElementById('splitIEMCheckbox').checked;
+
+      playClickSound(time, beatNumber === 1, splitIEM);
+
+      if (isPreCounting) {
+        const firstSection = curSong.sections[0];
+        const firstSectionThai = thaiVoiceMap[firstSection.name] || firstSection.name;
+
+        if (preCountBarsRemaining === 1) {
+          if (beatNumber === 1) {
+            speakThaiCue(firstSectionThai);
+            updateCueDisplay(firstSectionThai);
+          } else if (beatNumber >= 2) {
+            speakThaiCue(thaiNumbers[beatNumber]);
+            updateCueDisplay(thaiNumbers[beatNumber]);
+          }
+        } else {
+          speakThaiCue(thaiNumbers[beatNumber]);
+          updateCueDisplay(thaiNumbers[beatNumber]);
+        }
+      } else {
+        const curSection = curSong.sections[currentSectionIdx];
+        const isLastBarOfSection = (currentBar === curSection.bars);
+        const isLastSectionOfSong = (currentSectionIdx === curSong.sections.length - 1);
+        const hasNextSong = (currentSongIndex < setlist.length - 1);
+
+        const isSongEnding = isLastBarOfSection && isLastSectionOfSong && (!hasNextSong || curSong.transitionMode === 'stop');
+
+        // 1. เสียงพูด "จบเพลง 2 3 4" ครั้งเดียวที่ห้องสุดท้าย
+        if (isSongEnding && !isRepeatCurrentQueued && !isNextSongQueued) {
+          if (beatNumber === 1) {
+            speakThaiCue("จบเพลง");
+            updateCueDisplay("จบเพลง");
+          } else if (beatNumber >= 2) {
+            speakThaiCue(thaiNumbers[beatNumber]);
+            updateCueDisplay(thaiNumbers[beatNumber]);
+          }
+          return;
+        }
+
+        // 2. ข้ามไปเพลงถัดไป
+        if (isNextSongQueued || (isLastBarOfSection && isLastSectionOfSong && hasNextSong && curSong.transitionMode === 'seamless')) {
+          const nextSong = setlist[currentSongIndex + 1];
+          const nextSongFirstSec = nextSong.sections[0];
+          const firstSecName = thaiVoiceMap[nextSongFirstSec.name] || nextSongFirstSec.name;
+
+          if (beatNumber === 1) {
+            speakThaiCue("เพลงถัดไป");
+            updateCueDisplay("เพลงถัดไป");
+          } else if (beatNumber === 2) {
+            speakThaiCue(firstSecName);
+            updateCueDisplay(firstSecName);
+          } else if (beatNumber >= 3) {
+            speakThaiCue(thaiNumbers[beatNumber]);
+            updateCueDisplay(thaiNumbers[beatNumber]);
+          }
+          return;
+        }
+
+        // 3. วนท่อนเดิม
+        if (isLastBarOfSection && isRepeatCurrentQueued) {
+          const sectionThai = thaiVoiceMap[curSection.name] || curSection.name;
+          if (beatNumber === 1) {
+            speakThaiCue(sectionThai);
+            updateCueDisplay(sectionThai);
+          } else if (beatNumber === 2) {
+            speakThaiCue("วนซ้ำ");
+            updateCueDisplay("วนซ้ำ");
+          } else if (beatNumber >= 3) {
+            speakThaiCue(thaiNumbers[beatNumber]);
+            updateCueDisplay(thaiNumbers[beatNumber]);
+          }
+          return;
+        }
+
+        // 4. Free Praise
+        if (isFreePraise && queuedNextSectionIndex !== null) {
+          const targetSec = curSong.sections[queuedNextSectionIndex];
+          executeCue(beatNumber, targetSec);
+          return;
+        }
+
+        // 5. เปลี่ยนท่อนปกติ
+        if (!isFreePraise && !isHoldingClick && isLastBarOfSection && !isLastSectionOfSong) {
+          const nextSection = curSong.sections[currentSectionIdx + 1];
+          executeCue(beatNumber, nextSection);
+        }
+      }
+
+      setTimeout(() => {
+        updateUI(beatNumber);
+      }, Math.max(0, (time - audioCtx.currentTime) * 1000));
+    }
+
+    function executeCue(beatNumber, nextSection) {
+      const nextThaiName = thaiVoiceMap[nextSection.name] || nextSection.name;
+      const dynamicCue = nextSection.dynamicCue;
+
+      if (beatNumber === 1) {
+        speakThaiCue(nextThaiName);
+        updateCueDisplay(nextThaiName);
+      } else if (beatNumber === 2) {
+        const cueText = dynamicCue ? (thaiVoiceMap[dynamicCue] || dynamicCue) : thaiNumbers[2];
+        speakThaiCue(cueText);
+        updateCueDisplay(cueText);
+      } else if (beatNumber === 3) {
+        speakThaiCue(thaiNumbers[3]);
+        updateCueDisplay(thaiNumbers[3]);
+      } else if (beatNumber === 4) {
+        speakThaiCue(thaiNumbers[4]);
+        updateCueDisplay(thaiNumbers[4]);
+      }
+    }
+
+    function nextNote() {
+      const curSong = setlist[currentSongIndex];
+      const bpm = curSong ? curSong.bpm : 72;
+      const secondsPerBeat = 60.0 / bpm;
+      nextNoteTime += secondsPerBeat;
+
+      currentBeat++;
+      if (currentBeat > 4) {
+        currentBeat = 1;
+
+        if (isPreCounting) {
+          preCountBarsRemaining--;
+          if (preCountBarsRemaining <= 0) {
+            isPreCounting = false;
+            currentBar = 1;
+            currentSectionIdx = 0;
+          }
+          return;
+        }
+
+        if (isHoldingClick) {
+          currentBar++;
+          if (isNextSongQueued) {
+            isNextSongQueued = false;
+            isHoldingClick = false;
+            document.getElementById('holdClickBanner').classList.add('hidden');
+            advanceToNextSong(false);
+          }
+          return;
+        }
+
+        if (isFreePraise) {
+          currentBar++;
+          if (queuedNextSectionIndex !== null) {
+            currentSectionIdx = queuedNextSectionIndex;
+            queuedNextSectionIndex = null;
+            isFreePraise = false;
+            currentBar = 1;
+            updateFreePraiseUI();
+          }
+          return;
+        }
+
+        if (isRepeatCurrentQueued) {
+          currentBar = 1;
+          isRepeatCurrentQueued = false;
+          document.getElementById('repeatActiveTag').classList.add('hidden');
+          document.getElementById('repeatSectionBtn').classList.remove('bg-amber-600', 'text-slate-950');
+          return;
+        }
+
+        if (isNextSongQueued) {
+          isNextSongQueued = false;
+          advanceToNextSong(false);
+          return;
+        }
+
+        currentBar++;
+        const curSection = curSong.sections[currentSectionIdx];
+
+        if (currentBar > curSection.bars) {
+          currentBar = 1;
+          currentSectionIdx++;
+
+          if (currentSectionIdx >= curSong.sections.length) {
+            if (curSong.transitionMode === 'hold_click') {
+              isHoldingClick = true;
+              currentSectionIdx = curSong.sections.length - 1;
+              document.getElementById('holdClickBanner').classList.remove('hidden');
+              updateCueDisplay('คลิกเดินค้าง');
+              return;
+            }
+
+            if (currentSongIndex < setlist.length - 1 && curSong.transitionMode !== 'stop') {
+              advanceToNextSong(curSong.transitionMode === 'precount');
+            } else {
+              stopPlayback();
+            }
+            return;
+          }
+        }
+      }
+    }
+
+    function advanceToNextSong(needsPreCount) {
+      currentSongIndex++;
+      const nextSong = setlist[currentSongIndex];
+      selectSong(currentSongIndex, false);
+
+      currentSectionIdx = 0;
+      currentBar = 1;
+      currentBeat = 1;
+
+      if (nextSong.padKey) {
+        document.getElementById('padKeySelect').value = nextSong.padKey;
+        if (isPadPlaying) {
+          stopPadSynth();
+          setTimeout(startPadSynth, 200);
+        }
+      }
+
+      if (needsPreCount) {
+        isPreCounting = true;
+        preCountBarsRemaining = 1;
+      } else {
+        isPreCounting = false;
+      }
+    }
+
+    function scheduler() {
+      while (nextNoteTime < audioCtx.currentTime + scheduleAheadSec) {
+        scheduleBeat(currentBeat, nextNoteTime);
+        nextNote();
+      }
+      if (isPlaying) {
+        timerID = setTimeout(scheduler, lookaheadMs);
+      }
+    }
+
+    async function startPlayback() {
+      if (isPlaying) return;
+      const curSong = setlist[currentSongIndex];
+      if (!curSong || !curSong.sections.length) return alert('กรุณาเพิ่มท่อนเพลงก่อนเล่น');
+
+      ensureAudioContext();
+
+      // ปลุก Web Speech Engine ล่วงหน้าเมื่อผู้ใช้กด Play
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+        const dummyUtterance = new SpeechSynthesisUtterance('');
+        dummyUtterance.volume = 0;
+        window.speechSynthesis.speak(dummyUtterance);
+      }
+
+      requestWakeLock();
+      isPlaying = true;
+      isHoldingClick = false;
+      document.getElementById('holdClickBanner').classList.add('hidden');
+
+      const preCountSetting = parseInt(document.getElementById('preCountSelect').value);
+      if (preCountSetting > 0) {
+        isPreCounting = true;
+        preCountBarsRemaining = preCountSetting;
+      } else {
+        isPreCounting = false;
+        preCountBarsRemaining = 0;
+      }
+
+      currentSectionIdx = 0;
+      currentBar = 1;
+      currentBeat = 1;
+      nextNoteTime = audioCtx.currentTime + 0.05;
+
+      document.getElementById('playBtn').classList.add('opacity-50', 'pointer-events-none');
+      scheduler();
+    }
+
+    function stopPlayback() {
+      isPlaying = false;
+      isPreCounting = false;
+      isHoldingClick = false;
+      isRepeatCurrentQueued = false;
+      isNextSongQueued = false;
+      queuedNextSectionIndex = null;
+      clearTimeout(timerID);
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      window._speechQueueRef = [];
+      releaseWakeLock();
+
+      document.getElementById('playBtn').classList.remove('opacity-50', 'pointer-events-none');
+      document.getElementById('repeatActiveTag').classList.add('hidden');
+      document.getElementById('holdClickBanner').classList.add('hidden');
+      document.getElementById('repeatSectionBtn').classList.remove('bg-amber-600', 'text-slate-950');
+      if (isFreePraise) {
+        isFreePraise = false;
+        updateFreePraiseUI();
+      }
+      resetBeatUI();
+    }
+
+    function updateUI(beat) {
+      const curSong = setlist[currentSongIndex];
+      const curSection = curSong ? curSong.sections[currentSectionIdx] : null;
+
+      if (isPreCounting) {
+        document.getElementById('displaySection').innerText = `นับนำ`;
+        document.getElementById('displayBar').innerText = `${preCountBarsRemaining} Bar`;
+      } else if (isHoldingClick) {
+        document.getElementById('displaySection').innerText = `วนคลิกค้าง`;
+        document.getElementById('displayBar').innerText = `${currentBar} / ∞`;
+      } else if (curSection) {
+        document.getElementById('displaySection').innerText = isFreePraise ? `${curSection.name} (Free)` : curSection.name;
+        document.getElementById('displayBar').innerText = isFreePraise ? `${currentBar} / ∞` : `${currentBar} / ${curSection.bars}`;
+      }
+
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`beat${i}`);
+        if (i === beat) {
+          el.className = (i === 1) 
+            ? 'w-10 h-10 rounded-full bg-amber-400 border border-amber-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-110 font-mono transition text-base'
+            : 'w-10 h-10 rounded-full bg-emerald-500 border border-emerald-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-105 font-mono transition text-base';
+        } else {
+          el.className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
+        }
+      }
+    }
+
+    function updateCueDisplay(text) {
+      document.getElementById('displayCue').innerText = text;
+    }
+
+    function resetBeatUI() {
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`beat${i}`).className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
+      }
+      document.getElementById('displayCue').innerText = '-';
+      document.getElementById('displayBar').innerText = '0 / 0';
+      document.getElementById('displaySection').innerText = '-';
+    }
+
+    function toggleFreePraiseMode() {
+      isFreePraise = !isFreePraise;
+      queuedNextSectionIndex = null;
+      updateFreePraiseUI();
+    }
+
+    function updateFreePraiseUI() {
+      const toggleBtn = document.getElementById('toggleFpBtn');
+      const exitControls = document.getElementById('fpExitControls');
+      const banner = document.getElementById('fpBanner');
+
+      if (isFreePraise) {
+        toggleBtn.className = "bg-amber-600 active:bg-amber-500 text-slate-950 font-black px-4 py-2 rounded-lg border border-amber-400 flex items-center gap-1.5 transition shadow-lg text-xs sm:text-sm";
+        toggleBtn.innerHTML = "<span>🕊️</span> ปิด Free Praise";
+        banner.classList.remove('hidden');
+        exitControls.classList.remove('hidden');
+        exitControls.classList.add('flex');
+        renderFreePraiseExitButtons();
+      } else {
+        toggleBtn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm";
+        toggleBtn.innerHTML = "<span>🕊️</span> เปิด Free Praise (F)";
+        banner.classList.add('hidden');
+        exitControls.classList.add('hidden');
+        exitControls.classList.remove('flex');
+      }
+    }
+
+    function renderFreePraiseExitButtons() {
+      const container = document.getElementById('fpTargetButtons');
+      container.innerHTML = '';
+      const curSong = setlist[currentSongIndex];
+      if (!curSong) return;
+
+      curSong.sections.forEach((sec, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "bg-indigo-900/80 active:bg-indigo-700 text-indigo-200 px-3 py-1.5 rounded text-xs border border-indigo-500/60 font-semibold transition active:scale-95";
+        btn.innerText = `เข้า ${sec.name}`;
+        btn.onclick = () => {
+          queuedNextSectionIndex = idx;
+          updateCueDisplay(`เตรียมเข้า: ${sec.name}`);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderSetlist() {
+      const container = document.getElementById('songListContainer');
+      container.innerHTML = '';
+
+      setlist.forEach((song, idx) => {
+        const isActive = idx === currentSongIndex;
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-lg border cursor-pointer transition flex flex-col gap-2 ${
+          isActive ? 'bg-indigo-950/80 border-indigo-500 shadow-sm' : 'bg-slate-700/50 border-slate-600 active:bg-slate-700'
+        }`;
+        item.onclick = () => selectSong(idx, true);
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-xs ${isActive ? 'text-indigo-300' : 'text-slate-200'}">${song.title}</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5">${song.bpm} BPM | Key: ${song.padKey || 'C'} | ${song.timeSignature} | ${song.sections.length} ท่อน</div>
+            </div>
+            <button onclick="event.stopPropagation(); removeSong(${idx})" class="text-slate-400 active:text-rose-400 text-xs px-2 py-1">✕</button>
+          </div>
+
+          <div class="pt-2 border-t border-slate-600/60 flex items-center justify-between text-[11px]" onclick="event.stopPropagation()">
+            <label class="text-slate-400">จบเพลงนี้ให้:</label>
+            <select onchange="updateSongTransition(${idx}, this.value)" class="bg-slate-800 text-amber-300 font-medium rounded px-1.5 py-1 border border-slate-600 focus:outline-none text-[10px]">
+              <option value="stop" ${song.transitionMode === 'stop' ? 'selected' : ''}>⏹ หยุด (Stop - พูดจบเพลง)</option>
+              <option value="hold_click" ${song.transitionMode === 'hold_click' ? 'selected' : ''}>⏸️ วนคลิกค้าง (Hold Click)</option>
+              <option value="seamless" ${song.transitionMode === 'seamless' ? 'selected' : ''}>⏭ ต่อทันที (Seamless)</option>
+              <option value="precount" ${song.transitionMode === 'precount' ? 'selected' : ''}>🔢 นับนำก่อน (Pre-count)</option>
+            </select>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+
+      const current = setlist[currentSongIndex];
+      document.getElementById('currentSongTitleHeader').innerText = current ? current.title : '';
+      if (current) {
+        document.getElementById('bpmInput').value = current.bpm;
+        document.getElementById('timeSignatureSelect').value = current.timeSignature;
+        if (current.padKey) document.getElementById('padKeySelect').value = current.padKey;
+      }
+    }
+
+    function updateSongTransition(idx, mode) {
+      setlist[idx].transitionMode = mode;
+      saveToStorage();
+    }
+
+    function selectSong(idx, stopCurrent = true) {
+      if (stopCurrent && isPlaying) stopPlayback();
+      currentSongIndex = idx;
+      renderSetlist();
+      renderTimeline();
+      updateUI(1);
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timelineContainer');
+      container.innerHTML = '';
+      const curSong = setlist[currentSongIndex];
+      if (!curSong) return;
+
+      curSong.sections.forEach((sec, idx) => {
+        const card = document.createElement('div');
+        card.setAttribute('data-id', sec.id);
+        card.className = "bg-slate-700/80 border border-slate-600 rounded-lg p-3 flex items-center justify-between gap-3 shadow select-none";
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 cursor-move text-base p-1">☰</span>
+            <span class="font-bold text-xs text-white">${sec.name}</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1 text-[11px] text-slate-300">
+              <span>จำนวน:</span>
+              <input type="number" min="1" max="64" value="${sec.bars}" onchange="updateSectionBars(${idx}, this.value)" class="w-12 bg-slate-800 text-center font-bold text-amber-300 rounded px-1 py-1 border border-slate-600 text-xs font-mono">
+              <span>ห้อง</span>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <label class="text-[10px] text-slate-400 shrink-0">บีต 2:</label>
+              <select onchange="updateDynamicCue(${idx}, this.value)" class="bg-slate-800 text-amber-300 font-semibold text-xs rounded px-1.5 py-1 border border-slate-600 focus:outline-none">
+                <option value="" ${sec.dynamicCue === '' ? 'selected' : ''}>ปกติ ("สอง")</option>
+                <option value="พร้อมกัน" ${sec.dynamicCue === 'พร้อมกัน' ? 'selected' : ''}>🔥 All In</option>
+                <option value="Build Up" ${sec.dynamicCue === 'Build Up' ? 'selected' : ''}>📈 Build Up</option>
+                <option value="เบาลง" ${sec.dynamicCue === 'เบาลง' ? 'selected' : ''}>💧 Down</option>
+                <option value="วนซ้ำ" ${sec.dynamicCue === 'วนซ้ำ' ? 'selected' : ''}>🔁 Repeat</option>
+              </select>
+            </div>
+
+            <button onclick="removeSection(${idx})" class="text-slate-400 active:text-rose-400 px-2 py-1 text-sm font-bold">✕</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function addSection(name, bars) {
+      const curSong = setlist[currentSongIndex];
+      if (!curSong) return;
+      curSong.sections.push({
+        id: "s_" + Date.now() + Math.random().toString(36).substr(2, 4),
+        name: name,
+        bars: bars,
+        dynamicCue: ""
+      });
+      saveToStorage();
+      renderTimeline();
+    }
+
+    function removeSection(idx) {
+      setlist[currentSongIndex].sections.splice(idx, 1);
+      saveToStorage();
+      renderTimeline();
+    }
+
+    function updateSectionBars(idx, val) {
+      setlist[currentSongIndex].sections[idx].bars = parseInt(val) || 4;
+      saveToStorage();
+    }
+
+    function updateDynamicCue(idx, val) {
+      setlist[currentSongIndex].sections[idx].dynamicCue = val;
+      saveToStorage();
+    }
+
+    new Sortable(document.getElementById('timelineContainer'), {
+      animation: 150,
+      handle: '.cursor-move',
+      ghostClass: 'sortable-ghost',
+      onEnd: function (evt) {
+        const curSong = setlist[currentSongIndex];
+        const movedItem = curSong.sections.splice(evt.oldIndex, 1)[0];
+        curSong.sections.splice(evt.newIndex, 0, movedItem);
+        saveToStorage();
+      }
+    });
+
+    function addNewSong() {
+      const title = prompt("ใส่ชื่อเพลงใหม่:");
+      if (!title) return;
+      const newSong = {
+        id: "song_" + Date.now(),
+        title: title,
+        bpm: 72,
+        timeSignature: "4/4",
+        padKey: "C",
+        transitionMode: "hold_click",
+        sections: [
+          { id: "s1", name: "Intro", bars: 4, dynamicCue: "" },
+          { id: "s2", name: "Verse 1", bars: 8, dynamicCue: "" },
+          { id: "s3", name: "Chorus", bars: 8, dynamicCue: "พร้อมกัน" },
+          { id: "s4", name: "Ending", bars: 4, dynamicCue: "" }
+        ]
+      };
+      setlist.push(newSong);
+      saveToStorage();
+      selectSong(setlist.length - 1);
+    }
+
+    function removeSong(idx) {
+      if (setlist.length <= 1) return alert('ต้องมีเพลงในลิสต์อย่างน้อย 1 เพลง');
+      if (confirm(`ต้องการลบเพลง "${setlist[idx].title}" หรือไม่?`)) {
+        setlist.splice(idx, 1);
+        currentSongIndex = Math.max(0, currentSongIndex - 1);
+        saveToStorage();
+        renderSetlist();
+        renderTimeline();
+      }
+    }
+
+    // Render WAV พร้อมเสียง Cue
+    async function renderAudioWAVWithVoice() {
+      const curSong = setlist[currentSongIndex];
+      if (!curSong || !curSong.sections.length) return alert('ไม่มีโครงสร้างเพลงให้ Render');
+
+      const btn = document.getElementById('renderWavBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span>⏳</span> กำลังเรนเดอร์แทร็ก...`;
+      btn.classList.add('opacity-50', 'pointer-events-none');
+
+      try {
+        const bpm = curSong.bpm || 72;
+        const secondsPerBeat = 60.0 / bpm;
+        const totalBars = curSong.sections.reduce((acc, s) => acc + s.bars, 0);
+        const totalDuration = (totalBars * 4 * secondsPerBeat) + 2.5;
+        const sampleRate = 44100;
+
+        const offlineCtx = new OfflineAudioContext(2, sampleRate * totalDuration, sampleRate);
+        let scheduleTime = 0.5;
+
+        function renderOfflineCue(time, pitchFreq) {
+          const osc = offlineCtx.createOscillator();
+          const filter = offlineCtx.createBiquadFilter();
+          const gain = offlineCtx.createGain();
+          const panner = offlineCtx.createStereoPanner();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(pitchFreq, time);
+
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(850, time);
+          filter.Q.value = 4.0;
+
+          gain.gain.setValueAtTime(0.9, time);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+
+          panner.pan.setValueAtTime(1.0, time);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(panner);
+          panner.connect(offlineCtx.destination);
+
+          osc.start(time);
+          osc.stop(time + 0.19);
+        }
+
+        for (let sIdx = 0; sIdx < curSong.sections.length; sIdx++) {
+          const sec = curSong.sections[sIdx];
+          const isLastSection = (sIdx === curSong.sections.length - 1);
+          const nextSec = curSong.sections[sIdx + 1];
+
+          for (let b = 1; b <= sec.bars; b++) {
+            const isLastBarOfSec = (b === sec.bars);
+
+            for (let beat = 1; beat <= 4; beat++) {
+              const isAccent = (beat === 1);
+              const clickOsc = offlineCtx.createOscillator();
+              const clickGain = offlineCtx.createGain();
+              const clickPanner = offlineCtx.createStereoPanner();
+
+              clickOsc.type = 'sine';
+              clickOsc.frequency.setValueAtTime(isAccent ? 2200 : 1200, scheduleTime);
+              clickGain.gain.setValueAtTime(0.8, scheduleTime);
+              clickGain.gain.exponentialRampToValueAtTime(0.001, scheduleTime + 0.04);
+              clickPanner.pan.setValueAtTime(-1.0, scheduleTime);
+
+              clickOsc.connect(clickGain);
+              clickGain.connect(clickPanner);
+              clickPanner.connect(offlineCtx.destination);
+
+              clickOsc.start(scheduleTime);
+              clickOsc.stop(scheduleTime + 0.045);
+
+              // ใส่เสียงคิวห้องส่ง
+              if (isLastBarOfSec && isLastSection) {
+                if (beat === 1) renderOfflineCue(scheduleTime, 480);
+                else if (beat === 2) renderOfflineCue(scheduleTime, 400);
+                else if (beat === 3) renderOfflineCue(scheduleTime, 350);
+                else if (beat === 4) renderOfflineCue(scheduleTime, 300);
+              } else if (isLastBarOfSec && nextSec) {
+                if (beat === 1) renderOfflineCue(scheduleTime, 440);
+                else if (beat === 2) renderOfflineCue(scheduleTime, 400);
+                else if (beat === 3) renderOfflineCue(scheduleTime, 350);
+                else if (beat === 4) renderOfflineCue(scheduleTime, 300);
+              }
+
+              scheduleTime += secondsPerBeat;
+            }
+          }
+        }
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        const wavBlob = bufferToWaveBlob(renderedBuffer);
+
+        const url = URL.createObjectURL(wavBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${curSong.title}_StereoSplit_Track_${bpm}BPM.wav`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert('เกิดข้อผิดพลาดในการ Render ไฟล์เสียง');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.classList.remove('opacity-50', 'pointer-events-none');
+      }
+    }
+
+    function bufferToWaveBlob(abuffer) {
+      const numOfChan = abuffer.numberOfChannels;
+      const length = abuffer.length * numOfChan * 2 + 44;
+      const outBuffer = new ArrayBuffer(length);
+      const view = new DataView(outBuffer);
+      let pos = 0;
+
+      function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+      function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+
+      setUint32(0x46464952);
+      setUint32(length - 8);
+      setUint32(0x45564157);
+      setUint32(0x20746d66);
+      setUint32(16);
+      setUint16(1);
+      setUint16(numOfChan);
+      setUint32(abuffer.sampleRate);
+      setUint32(abuffer.sampleRate * 2 * numOfChan);
+      setUint16(numOfChan * 2);
+      setUint16(16);
+      setUint32(0x61746164);
+      setUint32(length - pos - 4);
+
+      const channels = [];
+      for (let i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
+
+      let offset = 0;
+      while (pos < length) {
+        for (let i = 0; i < numOfChan; i++) {
+          let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+          sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
+          view.setInt16(pos, sample, true);
+          pos += 2;
+        }
+        offset++;
+      }
+      return new Blob([outBuffer], { type: "audio/wav" });
+    }
+
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(setlist, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `worship_setlist_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function triggerImportJSON() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            setlist = imported;
+            currentSongIndex = 0;
+            saveToStorage();
+            renderSetlist();
+            renderTimeline();
+            alert('นำเข้า Setlist สำเร็จเรียบร้อย');
+          }
+        } catch(err) {
+          alert('รูปแบบไฟล์ไม่ถูกต้อง');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        isPlaying ? stopPlayback() : startPlayback();
+      } else if (e.code === 'KeyF') {
+        if (isPlaying) toggleFreePraiseMode();
+      } else if (e.code === 'KeyR') {
+        if (isPlaying) toggleRepeatSection();
+      }
+    });
+
+    document.getElementById('playBtn').onclick = startPlayback;
+    document.getElementById('stopBtn').onclick = stopPlayback;
+    document.getElementById('bpmInput').onchange = (e) => {
+      if (setlist[currentSongIndex]) {
+        setlist[currentSongIndex].bpm = parseInt(e.target.value) || 72;
+        saveToStorage();
+      }
+    };
+    document.getElementById('timeSignatureSelect').onchange = (e) => {
+      if (setlist[currentSongIndex]) {
+        setlist[currentSongIndex].timeSignature = e.target.value;
+        saveToStorage();
+      }
+    };
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    renderSetlist();
+    renderTimeline();
+    updateUI(1);
+  </script>
+</body>
+</html>
