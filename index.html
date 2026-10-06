@@ -6,6 +6,8 @@
   <title>ระบบคิวเพลง & เมโทรนอม Stage Pro (Worship HGC.)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <!-- เอนจินแปลงไฟล์เสียงเป็น MP3 ขนาดเล็ก -->
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
   <style>
     .sortable-ghost { opacity: 0.3; background-color: #3b82f6; }
     .pulse-glow { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
@@ -25,7 +27,7 @@
         <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono" id="minBarBpm">130 BPM</span>
       </div>
       <button onclick="toggleStageMode()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-200 font-bold px-3 py-1 rounded-lg border border-slate-500 text-xs flex items-center gap-1 shadow">
-        <span>⚙️</span> ออกจาก Stage View
+        <span>⚙️️</span> ออกจาก Stage View
       </button>
     </div>
 
@@ -125,9 +127,9 @@
           <span class="text-slate-300 font-medium text-[11px]">IEM Pan</span>
         </label>
 
-        <!-- Render WAV -->
-        <button id="renderWavBtn" onclick="renderAudioWAVWithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg transition text-[11px]">
-          <span>💾</span> Export WAV
+        <!-- Export MP3 (ไฟล์เล็กเบา) -->
+        <button id="renderMp3Btn" onclick="renderAudioMP3WithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-lg transition text-[11px]">
+          <span>💾</span> Export MP3
         </button>
 
       </div>
@@ -398,7 +400,7 @@
               <select id="weeklySetlistDropdown" onchange="loadSelectedWeeklySetlist(this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs rounded-lg px-2 py-1.5 flex-1 focus:outline-none font-medium">
               </select>
               <button onclick="deleteSelectedWeeklySetlist()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 px-2 py-1.5 rounded-lg" title="ลบสัปดาห์นี้">
-                🗑️️
+                🗑
               </button>
             </div>
           </div>
@@ -693,6 +695,21 @@
     }
 
     // ==========================================
+    // 🌟 ฟังก์ชันเปลี่ยนชื่อเพลงในคลัง (Rename Song) 🌟
+    // ==========================================
+    function renameLibrarySong(idx) {
+      const song = masterLibrary[idx];
+      if (!song) return;
+      const newTitle = prompt("แก้ไขชื่อเพลง:", song.title);
+      if (newTitle && newTitle.trim()) {
+        song.title = newTitle.trim();
+        saveMasterLibraryToStorage();
+        renderLibrarySongList();
+        renderLibraryTimeline();
+      }
+    }
+
+    // ==========================================
     // 🌟 ระบบ BACKUP & RESTORE เต็มรูปแบบ 🌟
     // ==========================================
     function exportAllFullBackupJSON() {
@@ -849,7 +866,10 @@
 
         card.innerHTML = `
           <div class="flex items-center justify-between">
-            <div class="font-bold text-xs ${isActive ? 'text-indigo-300' : 'text-white'}">${song.title}</div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-xs ${isActive ? 'text-indigo-300' : 'text-white'}">${song.title}</span>
+              <button onclick="event.stopPropagation(); renameLibrarySong(${originalIndex})" class="text-slate-400 hover:text-amber-400 text-xs px-1" title="แก้ไขชื่อเพลง">✏️️</button>
+            </div>
             <button onclick="event.stopPropagation(); deleteLibrarySong(${originalIndex})" class="text-slate-500 hover:text-rose-400 text-xs px-2 py-0.5">✕</button>
           </div>
           <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
@@ -885,7 +905,12 @@
         return;
       }
 
-      document.getElementById('libActiveSongTitle').innerText = `${song.title} (${song.bpm} BPM)`;
+      document.getElementById('libActiveSongTitle').innerHTML = `
+        <span class="cursor-pointer hover:underline text-amber-300" onclick="renameLibrarySong(${activeLibSongIndex})" title="คลิกเพื่อแก้ไขชื่อเพลง">
+          ${song.title} ✏️
+        </span> 
+        <span class="text-xs text-slate-400 font-normal">(${song.bpm} BPM)</span>
+      `;
 
       song.sections.forEach((sec, idx) => {
         const card = document.createElement('div');
@@ -2018,15 +2043,53 @@
     }
 
     // ==========================================
-    // 🌟 ระบบ EXPORT WAV พร้อมเสียงคิวไทยและแยกแพน 🌟
+    // 🌟 ระบบ EXPORT MP3 พร้อมเสียงคิวไทยและแยกแพน 🌟
     // ==========================================
-    async function renderAudioWAVWithVoice() {
+    function audioBufferToMp3Blob(audioBuffer, kbps = 128) {
+      const numChannels = audioBuffer.numberOfChannels;
+      const sampleRate = audioBuffer.sampleRate;
+      const mp3encoder = new lamejs.Mp3Encoder(numChannels, sampleRate, kbps);
+      const mp3Data = [];
+
+      const left = audioBuffer.getChannelData(0);
+      const right = numChannels > 1 ? audioBuffer.getChannelData(1) : left;
+      const sampleBlockSize = 1152;
+
+      const leftInt16 = new Int16Array(left.length);
+      const rightInt16 = new Int16Array(right.length);
+
+      for (let i = 0; i < left.length; i++) {
+        let sL = Math.max(-1, Math.min(1, left[i]));
+        leftInt16[i] = sL < 0 ? sL * 0x8000 : sL * 0x7FFF;
+
+        let sR = Math.max(-1, Math.min(1, right[i]));
+        rightInt16[i] = sR < 0 ? sR * 0x8000 : sR * 0x7FFF;
+      }
+
+      for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
+        const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
+        const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (mp3buf.length > 0) {
+          mp3Data.push(mp3buf);
+        }
+      }
+
+      const endBuf = mp3encoder.flush();
+      if (endBuf.length > 0) {
+        mp3Data.push(endBuf);
+      }
+
+      return new Blob(mp3Data, { type: 'audio/mp3' });
+    }
+
+    async function renderAudioMP3WithVoice() {
       const curSong = liveSetlist[currentLiveSongIndex];
       if (!curSong || !curSong.sections.length) return alert('ไม่มีโครงสร้างเพลงให้ Render');
 
-      const btn = document.getElementById('renderWavBtn');
+      const btn = document.getElementById('renderMp3Btn');
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<span>⏳</span> กำลังเรนเดอร์...`;
+      btn.innerHTML = `<span>⏳</span> กำลังบีบอัด MP3...`;
       btn.classList.add('opacity-50', 'pointer-events-none');
 
       try {
@@ -2036,7 +2099,6 @@
         const bpm = curSong.bpm || 72;
         const secondsPerBeat = 60.0 / bpm;
         const totalBars = curSong.sections.reduce((acc, s) => acc + s.bars, 0);
-        // เผื่อเวลาเสียงกังวานและนับนำ 1 ห้อง
         const totalDuration = ((totalBars + 1) * 4 * secondsPerBeat) + 3.0;
         const sampleRate = 44100;
 
@@ -2056,7 +2118,7 @@
 
           if (splitIEM && typeof offlineCtx.createStereoPanner === 'function') {
             const panner = offlineCtx.createStereoPanner();
-            panner.pan.setValueAtTime(-1.0, time); // ซ้าย 100%
+            panner.pan.setValueAtTime(-1.0, time);
             osc.connect(gain);
             gain.connect(panner);
             panner.connect(offlineCtx.destination);
@@ -2079,7 +2141,7 @@
 
           if (splitIEM && typeof offlineCtx.createStereoPanner === 'function') {
             const panner = offlineCtx.createStereoPanner();
-            panner.pan.setValueAtTime(1.0, time); // ขวา 100%
+            panner.pan.setValueAtTime(1.0, time);
             source.connect(gain);
             gain.connect(panner);
             panner.connect(offlineCtx.destination);
@@ -2092,7 +2154,7 @@
 
         let scheduleTime = 0.5;
 
-        // 1. ห้องนับนำเข้าเพลง (Pre-count 1 Bar)
+        // นับนำ 1 ห้อง
         const firstSec = curSong.sections[0];
         for (let beat = 1; beat <= 4; beat++) {
           scheduleOfflineClick(scheduleTime, beat === 1);
@@ -2104,7 +2166,7 @@
           scheduleTime += secondsPerBeat;
         }
 
-        // 2. ลูปตามท่อนเพลงทั้งหมดในโครงสร้าง
+        // ท่อนทั้งหมด
         for (let sIdx = 0; sIdx < curSong.sections.length; sIdx++) {
           const sec = curSong.sections[sIdx];
           const isLastSection = (sIdx === curSong.sections.length - 1);
@@ -2146,12 +2208,12 @@
         }
 
         const renderedBuffer = await offlineCtx.startRendering();
-        const wavBlob = bufferToWaveBlob(renderedBuffer);
+        const mp3Blob = audioBufferToMp3Blob(renderedBuffer, 128);
 
-        const url = URL.createObjectURL(wavBlob);
+        const url = URL.createObjectURL(mp3Blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${curSong.title}_Track_${bpm}BPM.wav`;
+        a.download = `${curSong.title}_Track_${bpm}BPM.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -2159,42 +2221,11 @@
 
       } catch (err) {
         console.error(err);
-        alert('เกิดข้อผิดพลาดในการ Render: ' + err.message);
+        alert('เกิดข้อผิดพลาดในการ Render MP3: ' + err.message);
       } finally {
         btn.innerHTML = originalText;
         btn.classList.remove('opacity-50', 'pointer-events-none');
       }
-    }
-
-    function bufferToWaveBlob(abuffer) {
-      const numOfChan = abuffer.numberOfChannels;
-      const length = abuffer.length * numOfChan * 2 + 44;
-      const outBuffer = new ArrayBuffer(length);
-      const view = new DataView(outBuffer);
-      let pos = 0;
-
-      function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-      function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
-
-      setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
-      setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
-      setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
-      setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
-
-      const channels = [];
-      for (let i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
-
-      let offset = 0;
-      while (pos < length) {
-        for (let i = 0; i < numOfChan; i++) {
-          let sample = Math.max(-1, Math.min(1, channels[i][offset]));
-          sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
-          view.setInt16(pos, sample, true);
-          pos += 2;
-        }
-        offset++;
-      }
-      return new Blob([outBuffer], { type: "audio/wav" });
     }
 
     document.getElementById('playBtn').onclick = startPlayback;
