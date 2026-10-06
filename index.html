@@ -16,142 +16,148 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col select-none">
 
   <!-- Header Bar -->
-  <header class="bg-slate-800 border-b border-slate-700 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 sticky top-0 z-30 shadow-md">
-    <div class="flex items-center gap-3">
-      <span class="text-3xl">⛪</span>
-      <div>
-        <h1 class="text-base sm:text-lg font-bold text-white tracking-wide flex items-center gap-2">
-          ระบบคิวเพลง & เมโทรนอม Stage Pro
-          <span class="text-xs bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 px-2 py-0.5 rounded-full font-semibold">Worship HGC.</span>
-          <span id="loadStatusBadge" class="text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal">กำลังโหลดเสียง...</span>
-          <span id="wakeLockBadge" class="hidden text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
-        </h1>
-        <p class="text-[11px] text-slate-400">Thai Voice Cue & Click Track Engine (Backup Pro Edition)</p>
+  <header id="mainHeader" class="bg-slate-800 border-b border-slate-700 px-3 py-2 sticky top-0 z-30 shadow-md transition-all duration-200">
+    
+    <!-- แถบย่อเมื่ออยู่ใน Stage View (บางเฉียบ ไม่บังจอหน้าเวที) -->
+    <div id="stageMinimalBar" class="hidden items-center justify-between gap-2">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <span class="text-sm font-bold text-amber-400 truncate" id="minBarSongTitle">Worship HGC</span>
+        <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono" id="minBarBpm">130 BPM</span>
       </div>
+      <button onclick="toggleStageMode()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-200 font-bold px-3 py-1 rounded-lg border border-slate-500 text-xs flex items-center gap-1 shadow">
+        <span>⚙️</span> ออกจาก Stage View
+      </button>
     </div>
 
-    <!-- ส่วนควบคุมระบบเสียง & ปุ่มสำรองข้อมูลหลัก -->
-    <div class="flex items-center gap-2 flex-wrap text-xs">
-      
-      <!-- ปุ่มสำรอง & กู้คืนข้อมูลทั้งหมด (All Data Backup / Restore) -->
-      <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
-        <button onclick="exportAllFullBackupJSON()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded text-xs transition flex items-center gap-1 shadow" title="สำรองทั้งคลังเพลงและทุก Setlist เก็บไว้ในเครื่องหรือ Google Drive">
-          <span>📦</span> สำรองทั้งหมด
-        </button>
-        <button onclick="triggerAllRestoreJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2 py-1 rounded text-xs border border-slate-600 transition flex items-center gap-1" title="กู้คืนข้อมูลทั้งหมดจากไฟล์สำรอง">
-          <span>📥</span> กู้คืน
-        </button>
-        <input type="file" id="allRestoreFileInput" class="hidden" accept=".json" onchange="importAllFullBackupJSON(event)">
-      </div>
-
-      <!-- ปุ่มสลับ Stage Mode -->
-      <button id="toggleStageModeBtn" onclick="toggleStageMode()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg transition active:scale-95 text-xs">
-        <span id="stageBtnIcon">🖥️</span> <span id="stageBtnText">Stage View</span>
-      </button>
-
-      <!-- BPM & Tap (ล็อกได้) -->
-      <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
-        <label class="text-slate-300 ml-1 font-medium">BPM:</label>
-        <input id="bpmInput" type="number" min="40" max="220" value="72" class="w-14 bg-slate-800 text-center font-bold text-amber-400 rounded px-1 py-1.5 border border-slate-600 focus:outline-none text-sm transition">
-        <button id="tapTempoBtn" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg transition active:scale-95 shadow">
-          TAP
-        </button>
-        <button id="lockTapBtn" onclick="toggleLockTempo()" class="px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1" title="ล็อก/ปลดล็อก">
-          <span id="lockIcon">🔓</span>
-          <span id="lockText" class="text-[10px] hidden sm:inline">ปลดล็อก</span>
-        </button>
-      </div>
-
-      <!-- Time Signature -->
-      <div class="flex items-center bg-slate-700/60 px-2 py-1.5 rounded-lg border border-slate-600">
-        <label class="text-slate-300 mr-1 font-medium">Time:</label>
-        <select id="timeSignatureSelect" class="bg-slate-800 text-white font-semibold rounded px-1.5 py-1 border border-slate-600 focus:outline-none">
-          <option value="4/4" selected>4/4</option>
-          <option value="6/8">6/8</option>
-          <option value="3/4">3/4</option>
-        </select>
-      </div>
-
-      <!-- นับนำ -->
-      <div class="flex items-center bg-slate-700/60 px-2 py-1.5 rounded-lg border border-slate-600">
-        <label class="text-slate-300 mr-1 font-medium">นับนำ:</label>
-        <select id="preCountSelect" class="bg-slate-800 text-amber-300 font-semibold rounded px-1.5 py-1 border border-slate-600 focus:outline-none">
-          <option value="1" selected>1 ห้อง</option>
-          <option value="2">2 ห้อง</option>
-          <option value="0">ไม่นับนำ</option>
-        </select>
-      </div>
-
-      <!-- Pad Controls -->
-      <div class="flex items-center gap-1 bg-amber-950/40 border border-amber-600/50 p-1 rounded-lg">
-        <span class="text-amber-400 font-bold ml-1">🎹 Pad:</span>
-        <select id="padKeySelect" class="bg-slate-800 text-amber-300 font-bold rounded px-1.5 py-1 border border-slate-600 text-xs">
-          <option value="C">C</option>
-          <option value="C#">C#</option>
-          <option value="D">D</option>
-          <option value="Eb">Eb</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="F#">F#</option>
-          <option value="G">G</option>
-          <option value="Ab">Ab</option>
-          <option value="A">A</option>
-          <option value="Bb">Bb</option>
-          <option value="B">B</option>
-        </select>
-        <button id="togglePadBtn" onclick="togglePadSynth()" class="bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition">
-          เปิด Pad
-        </button>
-      </div>
-
-      <!-- Volume Controls -->
-      <div class="flex items-center gap-2 bg-slate-700/40 px-2 py-1.5 rounded-lg border border-slate-600">
-        <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Click:</span>
-          <input type="range" id="clickVolumeSlider" min="0" max="1" step="0.05" value="0.8" class="w-12 h-1 accent-amber-400 cursor-pointer">
+    <!-- แถบ Header ปกติ (จะถูกซ่อนทั้งหมดเมื่อเข้าสู่ Stage View) -->
+    <div id="fullHeaderControls">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">⛪</span>
+          <div>
+            <h1 class="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-1.5">
+              ระบบคิวเพลง & เมโทรนอม Stage Pro
+              <span class="text-[10px] bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 px-1.5 py-0.5 rounded-full font-semibold">Worship HGC.</span>
+              <span id="loadStatusBadge" class="text-[9px] bg-amber-950 text-amber-300 border border-amber-600 px-1.5 py-0.5 rounded-full font-normal">กำลังโหลดเสียง...</span>
+              <span id="wakeLockBadge" class="hidden text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-1.5 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
+            </h1>
+          </div>
         </div>
-        <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Cue:</span>
-          <input type="range" id="cueVolumeSlider" min="0" max="1" step="0.05" value="1.0" class="w-12 h-1 accent-sky-400 cursor-pointer">
-        </div>
+
+        <!-- ปุ่มสลับ Stage Mode -->
+        <button id="toggleStageModeBtn" onclick="toggleStageMode()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg transition active:scale-95 text-xs">
+          <span id="stageBtnIcon">🖥️</span> <span id="stageBtnText">Stage View</span>
+        </button>
       </div>
 
-      <!-- IEM Pan -->
-      <label class="flex items-center gap-1 cursor-pointer bg-slate-700/40 px-2 py-1.5 rounded-lg border border-slate-600 select-none">
-        <input type="checkbox" id="splitIEMCheckbox" class="w-4 h-4 accent-amber-500 rounded" checked>
-        <span class="text-slate-300 font-medium">IEM Pan</span>
-      </label>
+      <!-- แผงเครื่องมือตั้งค่า (BPM, Pad, ปริมาณเสียง, ปุ่มสำรองข้อมูล) -->
+      <div class="flex items-center gap-1.5 flex-wrap text-xs">
+        
+        <!-- สำรอง & กู้คืนข้อมูลทั้งหมด -->
+        <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
+          <button onclick="exportAllFullBackupJSON()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded text-[11px] transition flex items-center gap-1 shadow" title="สำรองทั้งคลังเพลงและทุก Setlist">
+            <span>📦</span> สำรองทั้งหมด
+          </button>
+          <button onclick="triggerAllRestoreJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2 py-1 rounded text-[11px] border border-slate-600 transition flex items-center gap-1" title="กู้คืนข้อมูลทั้งหมดจากไฟล์สำรอง">
+            <span>📥</span> กู้คืน
+          </button>
+          <input type="file" id="allRestoreFileInput" class="hidden" accept=".json" onchange="importAllFullBackupJSON(event)">
+        </div>
 
-      <!-- Render WAV -->
-      <button id="renderWavBtn" onclick="renderAudioWAVWithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-lg transition">
-        <span>💾</span> Export WAV
-      </button>
+        <!-- BPM & Tap -->
+        <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
+          <label class="text-slate-300 text-[11px] ml-1">BPM:</label>
+          <input id="bpmInput" type="number" min="40" max="220" value="72" class="w-12 bg-slate-800 text-center font-bold text-amber-400 rounded px-1 py-1 text-xs border border-slate-600 focus:outline-none">
+          <button id="tapTempoBtn" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-2 py-1 rounded text-[11px] transition active:scale-95 shadow">TAP</button>
+          <button id="lockTapBtn" onclick="toggleLockTempo()" class="px-1.5 py-1 rounded bg-slate-800 border border-slate-600 text-slate-300 font-bold text-xs" title="ล็อก/ปลดล็อก">
+            <span id="lockIcon">🔓</span>
+          </button>
+        </div>
 
+        <!-- Time Signature -->
+        <div class="flex items-center bg-slate-700/60 px-2 py-1 rounded-lg border border-slate-600">
+          <label class="text-slate-300 text-[11px] mr-1 font-medium">Time:</label>
+          <select id="timeSignatureSelect" class="bg-slate-800 text-white font-semibold rounded px-1.5 py-0.5 text-xs border border-slate-600 focus:outline-none">
+            <option value="4/4" selected>4/4</option>
+            <option value="6/8">6/8</option>
+            <option value="3/4">3/4</option>
+          </select>
+        </div>
+
+        <!-- นับนำ -->
+        <div class="flex items-center bg-slate-700/60 px-2 py-1 rounded-lg border border-slate-600">
+          <label class="text-slate-300 text-[11px] mr-1 font-medium">นับนำ:</label>
+          <select id="preCountSelect" class="bg-slate-800 text-amber-300 font-semibold rounded px-1.5 py-0.5 text-xs border border-slate-600 focus:outline-none">
+            <option value="1" selected>1 ห้อง</option>
+            <option value="2">2 ห้อง</option>
+            <option value="0">ไม่นับนำ</option>
+          </select>
+        </div>
+
+        <!-- Pad Controls -->
+        <div class="flex items-center gap-1 bg-amber-950/40 border border-amber-600/50 p-1 rounded-lg">
+          <span class="text-amber-400 font-bold text-[11px] ml-1">🎹 Pad:</span>
+          <select id="padKeySelect" class="bg-slate-800 text-amber-300 font-bold rounded px-1.5 py-0.5 border border-slate-600 text-xs">
+            <option value="C">C</option><option value="C#">C#</option><option value="D">D</option><option value="Eb">Eb</option>
+            <option value="E">E</option><option value="F">F</option><option value="F#">F#</option><option value="G">G</option>
+            <option value="Ab">Ab</option><option value="A">A</option><option value="Bb">Bb</option><option value="B">B</option>
+          </select>
+          <button id="togglePadBtn" onclick="togglePadSynth()" class="bg-slate-700 active:bg-slate-600 text-slate-200 px-2 py-0.5 rounded text-[11px] font-bold transition">
+            เปิด Pad
+          </button>
+        </div>
+
+        <!-- Volume Controls -->
+        <div class="flex items-center gap-2 bg-slate-700/40 px-2 py-1 rounded-lg border border-slate-600">
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] text-slate-400">Click:</span>
+            <input type="range" id="clickVolumeSlider" min="0" max="1" step="0.05" value="0.8" class="w-10 h-1 accent-amber-400 cursor-pointer">
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] text-slate-400">Cue:</span>
+            <input type="range" id="cueVolumeSlider" min="0" max="1" step="0.05" value="1.0" class="w-10 h-1 accent-sky-400 cursor-pointer">
+          </div>
+        </div>
+
+        <!-- IEM Pan -->
+        <label class="flex items-center gap-1 cursor-pointer bg-slate-700/40 px-2 py-1 rounded-lg border border-slate-600 select-none">
+          <input type="checkbox" id="splitIEMCheckbox" class="w-3.5 h-3.5 accent-amber-500 rounded" checked>
+          <span class="text-slate-300 font-medium text-[11px]">IEM Pan</span>
+        </label>
+
+        <!-- Render WAV -->
+        <button id="renderWavBtn" onclick="renderAudioWAVWithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg transition text-[11px]">
+          <span>💾</span> Export WAV
+        </button>
+
+      </div>
     </div>
   </header>
 
   <!-- Navigation Tabs (Library vs Setlist) -->
-  <nav class="bg-slate-900 border-b border-slate-800 px-4 flex items-center gap-2">
+  <nav id="mainNav" class="bg-slate-900 border-b border-slate-800 px-4 flex items-center gap-2">
     <button id="tabLibraryBtn" onclick="switchMainTab('library')" class="py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition">
       <span>📚</span> คลังเพลงแม่แบบ (Song Library)
-      <span id="libCountBadge" class="bg-indigo-950 text-indigo-300 border border-indigo-700/60 px-2 py-0.2 rounded-full text-[10px]">5</span>
+      <span id="libCountBadge" class="bg-indigo-950 text-indigo-300 border border-indigo-700/60 px-2 py-0.5 rounded-full text-[10px]">5</span>
     </button>
     <button id="tabSetlistBtn" onclick="switchMainTab('setlist')" class="py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
       <span>📋</span> จัด Setlist สัปดาห์นี้ (Weekly Setlist)
-      <span id="setlistCountBadge" class="bg-slate-800 text-slate-400 px-2 py-0.2 rounded-full text-[10px]">5</span>
+      <span id="setlistCountBadge" class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full text-[10px]">5</span>
     </button>
   </nav>
 
   <!-- ========================================== -->
   <!-- 1. STAGE MODE VIEW (จอใหญ่หน้าเวที) -->
   <!-- ========================================== -->
-  <div id="stageModeContainer" class="hidden flex-1 flex-col p-4 sm:p-8 justify-between max-w-6xl mx-auto w-full gap-6">
-    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+  <div id="stageModeContainer" class="hidden flex-1 flex-col p-4 sm:p-8 justify-between max-w-6xl mx-auto w-full gap-5">
+    
+    <!-- ส่วนหัวชื่อเพลง & เวลา -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
       <div>
         <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">กำลังเล่นเพลง (Live On Stage)</span>
         <h2 id="stageSongTitle" class="text-2xl sm:text-4xl font-extrabold text-white mt-1">-</h2>
       </div>
-      <div class="flex items-center gap-4 bg-slate-950 border border-slate-800 px-5 py-3 rounded-2xl font-mono text-base sm:text-xl">
+      <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-4 py-2 rounded-2xl font-mono text-sm sm:text-lg">
         <div class="text-center">
           <span class="text-[10px] text-slate-400 block font-sans">เพลงนี้</span>
           <span id="stageSongTimer" class="font-bold text-amber-400">00:00</span>
@@ -166,7 +172,7 @@
 
     <!-- ส่วนท่อนปัจจุบัน & ท่อนถัดไป (NOW & NEXT) ขนาดใหญ่พิเศษ -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-      <div class="md:col-span-7 bg-slate-950 border-2 border-amber-500/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div class="md:col-span-7 bg-slate-950 border-2 border-amber-500/60 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
         <div class="flex items-center justify-between text-xs sm:text-sm text-slate-400 mb-2">
           <span class="uppercase tracking-widest font-bold text-amber-400 flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> ท่อนปัจจุบัน (NOW)
@@ -182,7 +188,7 @@
         </div>
       </div>
 
-      <div class="md:col-span-5 bg-slate-950/70 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between h-full">
+      <div class="md:col-span-5 bg-slate-950/70 border border-slate-800 rounded-3xl p-5 sm:p-8 flex flex-col justify-between h-full">
         <span class="text-xs sm:text-sm uppercase tracking-widest font-bold text-sky-400">ท่อนถัดไป (NEXT)</span>
         <div id="stageNextSection" class="text-2xl sm:text-4xl font-extrabold text-sky-200 mt-2 truncate">-</div>
         <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
@@ -192,15 +198,15 @@
       </div>
     </div>
 
-    <!-- บีต 1-4 ขนาดใหญ่ -->
-    <div class="grid grid-cols-4 gap-3 sm:gap-6 py-2">
+    <!-- บีต 1-4 ขนาดใหญ่สะใจ -->
+    <div class="grid grid-cols-4 gap-3 sm:gap-6 py-1">
       <div id="stageBeat1" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">1</div>
       <div id="stageBeat2" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">2</div>
       <div id="stageBeat3" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">3</div>
       <div id="stageBeat4" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">4</div>
     </div>
 
-    <!-- ปุ่มควบคุมสดหน้าเวทีขนาดใหญ่ -->
+    <!-- ปุ่มควบคุมสดหน้าเวทีขนาดใหญ่พิเศษ -->
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
       <button id="stagePlayBtn" onclick="startPlayback()" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl text-base sm:text-lg active:scale-95 transition">
         <span>▶</span> เริ่มเล่น
@@ -225,7 +231,7 @@
   <!-- ========================================== -->
   <div id="setupModeContainer" class="flex-1 flex flex-col">
     <!-- หน้าจอสถานะ Realtime & ตัวจับเวลา -->
-    <section class="bg-slate-950 px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-3">
+    <section class="bg-slate-950 px-4 sm:px-6 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-2.5">
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <span class="text-slate-400">Section:</span>
         <span id="displaySection" class="font-bold text-amber-400 bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-800/80 font-mono text-base sm:text-lg">-</span>
@@ -253,38 +259,38 @@
       <!-- บีต 1-4 -->
       <div class="flex items-center gap-2">
         <span class="text-slate-400 mr-1 text-xs">Beat:</span>
-        <div id="beat1" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">1</div>
-        <div id="beat2" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">2</div>
-        <div id="beat3" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">3</div>
-        <div id="beat4" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">4</div>
+        <div id="beat1" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm">1</div>
+        <div id="beat2" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm">2</div>
+        <div id="beat3" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm">3</div>
+        <div id="beat4" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm">4</div>
       </div>
 
       <div class="flex items-center gap-2">
         <span class="text-slate-400 text-xs">คิวเสียงไทย:</span>
-        <span id="displayCue" class="font-mono bg-slate-800 text-sky-400 px-4 py-1.5 rounded-lg border border-slate-700 min-w-[120px] text-center font-bold text-sm sm:text-base">-</span>
+        <span id="displayCue" class="font-mono bg-slate-800 text-sky-400 px-3 py-1.5 rounded-lg border border-slate-700 min-w-[110px] text-center font-bold text-xs sm:text-sm">-</span>
       </div>
     </section>
 
     <!-- ปุ่ม Action ปกติ -->
-    <section class="bg-slate-950/80 px-4 py-2.5 border-b border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <button id="playBtn" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
-        <span class="text-lg">▶</span> เริ่มเล่น (Space)
+    <section class="bg-slate-950/80 px-4 py-2 border-b border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button id="playBtn" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-xs sm:text-sm">
+        <span class="text-base">▶</span> เริ่มเล่น (Space)
       </button>
-      <button id="stopBtn" class="bg-rose-700 active:bg-rose-600 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
-        <span class="text-lg">⏹</span> หยุด
+      <button id="stopBtn" class="bg-rose-700 active:bg-rose-600 text-white font-black py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-xs sm:text-sm">
+        <span class="text-base">⏹</span> หยุด
       </button>
-      <button id="repeatSectionBtn" onclick="toggleRepeatSection()" class="bg-slate-700 active:bg-slate-600 text-amber-300 font-bold py-3 rounded-xl border border-slate-600 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
-        <span class="text-base">🔁</span> วนท่อนเดิม (R)
+      <button id="repeatSectionBtn" onclick="toggleRepeatSection()" class="bg-slate-700 active:bg-slate-600 text-amber-300 font-bold py-2.5 rounded-xl border border-slate-600 flex items-center justify-center gap-2 transition active:scale-95 text-xs shadow">
+        <span>🔁</span> วนท่อนเดิม (R)
       </button>
-      <button id="triggerNextSongBtn" onclick="triggerNextSongAction()" class="bg-indigo-900/80 active:bg-indigo-700 text-indigo-100 font-bold py-3 rounded-xl border border-indigo-500/80 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
-        <span class="text-base">⏭</span> ส่งเข้าเพลงถัดไป
+      <button id="triggerNextSongBtn" onclick="triggerNextSongAction()" class="bg-indigo-900/80 active:bg-indigo-700 text-indigo-100 font-bold py-2.5 rounded-xl border border-indigo-500/80 flex items-center justify-center gap-2 transition active:scale-95 text-xs shadow">
+        <span>⏭</span> ส่งเข้าเพลงถัดไป
       </button>
     </section>
 
     <!-- แผง Free Praise -->
     <div id="freePraiseControlPanel" class="bg-indigo-950/60 border-b border-indigo-800/60 px-4 sm:px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs">
       <div class="flex items-center gap-2">
-        <button id="toggleFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm active:scale-95">
+        <button id="toggleFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-3 py-1.5 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs active:scale-95">
           <span>🕊</span> เปิด Free Praise (F)
         </button>
         <span class="text-slate-400 hidden sm:inline">คลิกจะวนลูปต่อเนื่องเพื่อให้นมัสการอิสระ</span>
@@ -662,7 +668,7 @@
       document.getElementById('setlistCountBadge').innerText = liveSetlist.length;
     }
 
-    // สลับแท็บโหมด
+    // สลับแท็บโหมด Library vs Setlist
     function switchMainTab(tab) {
       activeMainTab = tab;
       const vLib = document.getElementById('viewLibrary');
@@ -1220,27 +1226,41 @@
       }
     });
 
-    // --- STAGE VIEW TOGGLE ---
+    // --- STAGE VIEW TOGGLE (พร้อมการซ่อน Header) ---
     function toggleStageMode() {
       isStageModeActive = !isStageModeActive;
       const stageBox = document.getElementById('stageModeContainer');
       const setupBox = document.getElementById('setupModeContainer');
-      const btnIcon = document.getElementById('stageBtnIcon');
-      const btnText = document.getElementById('stageBtnText');
+      const mainNav = document.getElementById('mainNav');
+      const minimalBar = document.getElementById('stageMinimalBar');
+      const fullControls = document.getElementById('fullHeaderControls');
 
       if (isStageModeActive) {
         stageBox.classList.remove('hidden');
         stageBox.classList.add('flex');
         setupBox.classList.add('hidden');
-        btnIcon.innerText = "⚙️";
-        btnText.innerText = "Setup View";
+        if (mainNav) mainNav.classList.add('hidden');
+        
+        fullControls.classList.add('hidden');
+        minimalBar.classList.remove('hidden');
+        minimalBar.classList.add('flex');
+
+        const cur = liveSetlist[currentLiveSongIndex];
+        if (cur) {
+          document.getElementById('minBarSongTitle').innerText = cur.title;
+          document.getElementById('minBarBpm').innerText = `${cur.bpm} BPM`;
+        }
+
         requestWakeLock();
       } else {
         stageBox.classList.add('hidden');
         stageBox.classList.remove('flex');
         setupBox.classList.remove('hidden');
-        btnIcon.innerText = "🖥️";
-        btnText.innerText = "Stage View";
+        if (mainNav) mainNav.classList.remove('hidden');
+
+        fullControls.classList.remove('hidden');
+        minimalBar.classList.add('hidden');
+        minimalBar.classList.remove('flex');
       }
       updateUI(currentBeat);
     }
@@ -1324,7 +1344,7 @@
       const totalCount = entries.length;
       let loadedCount = 0;
 
-      statusBadge.className = "text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal";
+      statusBadge.className = "text-[9px] bg-amber-950 text-amber-300 border border-amber-600 px-1.5 py-0.5 rounded-full font-normal";
       statusBadge.innerText = `กำลังโหลด (${loadedCount}/${totalCount})...`;
 
       const loadPromises = entries.map(async ([key, url]) => {
@@ -1344,10 +1364,10 @@
       isLoadingInProgress = false;
 
       if (loadedCount > 0) {
-        statusBadge.className = "text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal";
-        statusBadge.innerText = `พร้อมใช้งาน (${loadedCount}/${totalCount} WAV)`;
+        statusBadge.className = "text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-1.5 py-0.5 rounded-full font-normal";
+        statusBadge.innerText = `พร้อมใช้ (${loadedCount}/${totalCount} WAV)`;
       } else {
-        statusBadge.className = "text-[10px] bg-rose-950 text-rose-300 border border-rose-600 px-2 py-0.5 rounded-full font-normal";
+        statusBadge.className = "text-[9px] bg-rose-950 text-rose-300 border border-rose-600 px-1.5 py-0.5 rounded-full font-normal";
         statusBadge.innerText = "ไม่พบไฟล์ใน cues/";
       }
     }
@@ -1738,10 +1758,10 @@
         const el = document.getElementById(`beat${i}`);
         if (i === beat) {
           el.className = (i === 1) 
-            ? 'w-10 h-10 rounded-full bg-amber-400 border border-amber-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-110 font-mono transition text-base'
-            : 'w-10 h-10 rounded-full bg-emerald-500 border border-emerald-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-105 font-mono transition text-base';
+            ? 'w-9 h-9 rounded-full bg-amber-400 border border-amber-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-110 font-mono transition text-sm'
+            : 'w-9 h-9 rounded-full bg-emerald-500 border border-emerald-300 flex items-center justify-center font-bold text-slate-900 shadow-md scale-105 font-mono transition text-sm';
         } else {
-          el.className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
+          el.className = 'w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm';
         }
 
         const stageBeatEl = document.getElementById(`stageBeat${i}`);
@@ -1765,7 +1785,7 @@
 
     function resetBeatUI() {
       for (let i = 1; i <= 4; i++) {
-        document.getElementById(`beat${i}`).className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
+        document.getElementById(`beat${i}`).className = 'w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-sm';
         const sEl = document.getElementById(`stageBeat${i}`);
         if (sEl) sEl.className = 'h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg';
       }
@@ -1915,7 +1935,7 @@
 
       isPadPlaying = true;
       const btn = document.getElementById('togglePadBtn');
-      btn.className = "bg-amber-500 active:bg-amber-400 text-slate-950 font-bold px-2.5 py-1 rounded transition shadow";
+      btn.className = "bg-amber-500 active:bg-amber-400 text-slate-950 font-bold px-2 py-0.5 rounded text-[11px] transition shadow";
       btn.innerText = "ปิด Pad";
     }
 
@@ -1929,7 +1949,7 @@
         padOscillators = [];
         isPadPlaying = false;
         const btn = document.getElementById('togglePadBtn');
-        btn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition";
+        btn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 px-2 py-0.5 rounded text-[11px] font-bold transition";
         btn.innerText = "เปิด Pad";
       }, 1600);
     }
@@ -1967,8 +1987,6 @@
       const bpmInput = document.getElementById('bpmInput');
       const tapBtn = document.getElementById('tapTempoBtn');
       const lockIcon = document.getElementById('lockIcon');
-      const lockText = document.getElementById('lockText');
-      const lockBtn = document.getElementById('lockTapBtn');
 
       if (isTempoLocked) {
         bpmInput.disabled = true;
@@ -1976,16 +1994,12 @@
         tapBtn.disabled = true;
         tapBtn.classList.add('opacity-50', 'pointer-events-none');
         lockIcon.innerText = "🔒";
-        lockText.innerText = "ล็อกแล้ว";
-        lockBtn.className = "px-2 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500 text-amber-300 font-bold transition flex items-center gap-1";
       } else {
         bpmInput.disabled = false;
         bpmInput.classList.remove('opacity-50', 'cursor-not-allowed');
         tapBtn.disabled = false;
         tapBtn.classList.remove('opacity-50', 'pointer-events-none');
         lockIcon.innerText = "🔓";
-        lockText.innerText = "ปลดล็อก";
-        lockBtn.className = "px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1";
       }
     }
 
