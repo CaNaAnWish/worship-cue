@@ -22,23 +22,24 @@
       <div>
         <h1 class="text-base sm:text-lg font-bold text-white tracking-wide flex items-center gap-2">
           Worship Cue & Click
+          <span id="loadStatusBadge" class="text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal">กำลังโหลดเสียง...</span>
           <span id="wakeLockBadge" class="hidden text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
         </h1>
-        <p class="text-[11px] text-slate-400">ระบบคิวเสียงพูดภาษาไทย & เมโทรนอมนำร่อง</p>
+        <p class="text-[11px] text-slate-400">ระบบคิวเสียงภาษาไทย & เมโทรนอมนำร่อง (24 WAV Cues)</p>
       </div>
     </div>
 
     <!-- ส่วนตั้งค่าหลัก -->
     <div class="flex items-center gap-2 flex-wrap text-xs">
       
-      <!-- BPM & Tap พร้อมระบบล็อก -->
+      <!-- BPM & Tap -->
       <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
         <label class="text-slate-300 ml-1 font-medium">BPM:</label>
         <input id="bpmInput" type="number" min="40" max="220" value="72" class="w-14 bg-slate-800 text-center font-bold text-amber-400 rounded px-1 py-1.5 border border-slate-600 focus:outline-none text-sm transition">
         <button id="tapTempoBtn" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg transition active:scale-95 shadow">
           TAP
         </button>
-        <button id="lockTapBtn" onclick="toggleLockTempo()" class="px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1" title="ล็อก/ปลดล็อกการกด TAP และแก้ไข BPM">
+        <button id="lockTapBtn" onclick="toggleLockTempo()" class="px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1" title="ล็อก/ปลดล็อก">
           <span id="lockIcon">🔓</span>
           <span id="lockText" class="text-[10px] hidden sm:inline">ปลดล็อก</span>
         </button>
@@ -100,7 +101,7 @@
 
       <!-- IEM Pan -->
       <label class="flex items-center gap-1 cursor-pointer bg-slate-700/40 px-2.5 py-1.5 rounded-lg border border-slate-600 select-none">
-        <input type="checkbox" id="splitIEMCheckbox" class="w-4 h-4 accent-amber-500 rounded">
+        <input type="checkbox" id="splitIEMCheckbox" class="w-4 h-4 accent-amber-500 rounded" checked>
         <span class="text-slate-300 font-medium">IEM Pan</span>
       </label>
 
@@ -124,7 +125,7 @@
       <span id="fpBanner" class="hidden text-xs bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-full pulse-glow">🕊️ FREE PRAISE</span>
     </div>
 
-    <!-- บีต 1-4 ขนาดใหญ่ -->
+    <!-- บีต 1-4 -->
     <div class="flex items-center gap-2">
       <span class="text-slate-400 mr-1 text-xs">Beat:</span>
       <div id="beat1" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">1</div>
@@ -188,28 +189,32 @@
       <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[520px] pr-1"></div>
     </div>
 
-    <!-- Sections Palettes -->
-    <div class="md:col-span-3 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-4">
+    <!-- Sections Palettes (ปรับปุ่มท่อนตรงตาม 24 ไฟล์ในเครื่อง) -->
+    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-4">
       <div>
         <h2 class="font-bold text-xs text-slate-200 mb-2">🏷️ Sections (แตะเพิ่มลงไทม์ไลน์)</h2>
-        <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
-          <button onclick="addSection('Intro', 4)" class="bg-slate-700 active:bg-slate-600 text-left p-2.5 rounded-lg border border-slate-600 text-white transition active:scale-95">Intro (4)</button>
-          <button onclick="addSection('Verse 1', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 1 (8)</button>
-          <button onclick="addSection('Verse 2', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 2 (8)</button>
-          <button onclick="addSection('Verse 3', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 3 (8)</button>
-          <button onclick="addSection('Verse 4', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2.5 rounded-lg border border-blue-700 text-blue-200 transition active:scale-95">Verse 4 (8)</button>
-          <button onclick="addSection('Pre-Chorus', 4)" class="bg-cyan-900/60 active:bg-cyan-800 text-left p-2.5 rounded-lg border border-cyan-700 text-cyan-200 transition active:scale-95">Pre-Chorus (4)</button>
-          <button onclick="addSection('Chorus', 8)" class="bg-amber-900/60 active:bg-amber-800 text-left p-2.5 rounded-lg border border-amber-700 text-amber-200 transition active:scale-95">Chorus (8)</button>
-          <button onclick="addSection('Bridge', 8)" class="bg-purple-900/60 active:bg-purple-800 text-left p-2.5 rounded-lg border border-purple-700 text-purple-200 transition active:scale-95">Bridge (8)</button>
-          <button onclick="addSection('Interlude', 4)" class="bg-emerald-900/60 active:bg-emerald-800 text-left p-2.5 rounded-lg border border-emerald-700 text-emerald-200 transition active:scale-95">Interlude (4)</button>
-          <button onclick="addSection('Outro', 4)" class="bg-fuchsia-900/60 active:bg-fuchsia-800 text-left p-2.5 rounded-lg border border-fuchsia-700 text-fuchsia-200 transition active:scale-95">Outro (4)</button>
-          <button onclick="addSection('Ending', 4)" class="bg-rose-900/60 active:bg-rose-800 text-left p-2.5 rounded-lg border border-rose-700 text-rose-200 transition active:scale-95">Ending (4)</button>
+        <div class="grid grid-cols-3 gap-1.5 text-xs font-semibold">
+          <button onclick="addSection('Intro', 4)" class="bg-slate-700 active:bg-slate-600 text-left p-2 rounded border border-slate-600 text-white transition active:scale-95">Intro (4)</button>
+          <button onclick="addSection('Verse 1', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 1 (8)</button>
+          <button onclick="addSection('Verse 2', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 2 (8)</button>
+          <button onclick="addSection('Verse 3', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 3 (8)</button>
+          <button onclick="addSection('Verse 4', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 4 (8)</button>
+          <button onclick="addSection('Verse 5', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 5 (8)</button>
+          <button onclick="addSection('Verse 6', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 6 (8)</button>
+          <button onclick="addSection('Pre-Chorus', 4)" class="bg-cyan-900/60 active:bg-cyan-800 text-left p-2 rounded border border-cyan-700 text-cyan-200 transition active:scale-95">Pre-Chorus (4)</button>
+          <button onclick="addSection('Chorus', 8)" class="bg-amber-900/60 active:bg-amber-800 text-left p-2 rounded border border-amber-700 text-amber-200 transition active:scale-95">Chorus (8)</button>
+          <button onclick="addSection('Bridge', 8)" class="bg-purple-900/60 active:bg-purple-800 text-left p-2 rounded border border-purple-700 text-purple-200 transition active:scale-95">Bridge (8)</button>
+          <button onclick="addSection('Interlude', 4)" class="bg-emerald-900/60 active:bg-emerald-800 text-left p-2 rounded border border-emerald-700 text-emerald-200 transition active:scale-95">Interlude (4)</button>
+          <button onclick="addSection('Instrumental', 4)" class="bg-emerald-950/80 active:bg-emerald-800 text-left p-2 rounded border border-emerald-600 text-emerald-300 transition active:scale-95">Inst. (4)</button>
+          <button onclick="addSection('Solo', 4)" class="bg-orange-950/80 active:bg-orange-800 text-left p-2 rounded border border-orange-600 text-orange-300 transition active:scale-95">Solo (4)</button>
+          <button onclick="addSection('Tag', 2)" class="bg-teal-950/80 active:bg-teal-800 text-left p-2 rounded border border-teal-600 text-teal-300 transition active:scale-95">Tag (2)</button>
+          <button onclick="addSection('Outro', 4)" class="bg-fuchsia-900/60 active:bg-fuchsia-800 text-left p-2 rounded border border-fuchsia-700 text-fuchsia-200 transition active:scale-95">Outro (4)</button>
+          <button onclick="addSection('Ending', 4)" class="bg-rose-900/60 active:bg-rose-800 text-left p-2 rounded border border-rose-700 text-rose-200 transition active:scale-95">Ending (4)</button>
         </div>
       </div>
 
       <div class="border-t border-slate-700 pt-3">
         <h2 class="font-bold text-xs text-slate-200 mb-1">⚡ Dynamic Cues (บีตที่ 2)</h2>
-        <p class="text-[11px] text-slate-400 mb-2">ตัวอย่างเสียงส่ง: <span class="text-amber-300">"คอรัส - Build Up - สาม - สี่"</span></p>
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-amber-950/60 border border-amber-600/60 p-2 rounded-lg text-amber-300 font-medium">🔥 All In (พร้อมกัน)</div>
           <div class="bg-blue-950/60 border border-blue-600/60 p-2 rounded-lg text-blue-300 font-medium">📈 Build Up</div>
@@ -220,7 +225,7 @@
     </div>
 
     <!-- Timeline -->
-    <div class="md:col-span-5 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
+    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <h2 class="font-bold text-xs text-slate-200">🎼 Arrangement Timeline</h2>
@@ -233,41 +238,53 @@
   </main>
 
   <script>
-    const thaiVoiceMap = {
-      "Intro": "อินโทร",
-      "Verse 1": "เวิร์ส 1",
-      "Verse 2": "เวิร์ส 2",
-      "Verse 3": "เวิร์ส 3",
-      "Verse 4": "เวิร์ส 4",
-      "Pre-Chorus": "ปรีคอรัส",
-      "Chorus": "คอรัส",
-      "Bridge": "บริดจ์",
-      "Interlude": "ท่อนส่ง",
-      "Outro": "เอาต์โทร",
-      "Ending": "ท่อนจบ",
-      "พร้อมกัน": "พร้อมกัน",
-      "Build Up": "บิวด์อัพ",
-      "เบาลง": "เบาลง",
-      "วนซ้ำ": "วนซ้ำ",
-      "nextSong": "เพลงถัดไป",
-      "จบเพลง": "จบเพลง"
+    // --- ตั้งค่าระบบ Audio Buffer แมปตรงกับ 24 ไฟล์ในโฟลเดอร์ cues/ เป๊ะ 100% ---
+    const cueAudioMap = {
+      "Intro": "cues/intro.wav",
+      "Verse 1": "cues/verse1.wav",
+      "Verse 2": "cues/verse2.wav",
+      "Verse 3": "cues/verse3.wav",
+      "Verse 4": "cues/verse4.wav",
+      "Verse 5": "cues/verse5.wav",
+      "Verse 6": "cues/verse6.wav",
+      "Pre-Chorus": "cues/prechorus.wav",
+      "Chorus": "cues/chorus.wav",
+      "Bridge": "cues/bridge.wav",
+      "Interlude": "cues/interlude.wav",
+      "Instrumental": "cues/instrumental.wav",
+      "Solo": "cues/solo.wav",
+      "Tag": "cues/tag.wav",
+      "Outro": "cues/outro.wav",
+      "Ending": "cues/ending.wav",
+      "1": "cues/1.wav",
+      "2": "cues/2.wav",
+      "3": "cues/3.wav",
+      "4": "cues/4.wav",
+      "พร้อมกัน": "cues/all_in.wav",
+      "Build Up": "cues/buildup.wav",
+      "เบาลง": "cues/down.wav",
+      "วนซ้ำ": "cues/repeat.wav",
+      "จบเพลง": "cues/song_end.wav"
     };
 
-    const thaiNumbers = { 1: "หนึ่ง", 2: "สอง", 3: "สาม", 4: "สี่" };
+    const cueDisplayNames = {
+      "Intro": "อินโทร", "Verse 1": "เวิร์ส 1", "Verse 2": "เวิร์ส 2", "Verse 3": "เวิร์ส 3",
+      "Verse 4": "เวิร์ส 4", "Verse 5": "เวิร์ส 5", "Verse 6": "เวิร์ส 6", "Pre-Chorus": "ปรีคอรัส",
+      "Chorus": "คอรัส", "Bridge": "บริดจ์", "Interlude": "ท่อนส่ง", "Instrumental": "ดนตรี",
+      "Solo": "โซโล่", "Tag": "แท็ก", "Outro": "เอาต์โทร", "Ending": "ท่อนจบ",
+      "พร้อมกัน": "พร้อมกัน", "Build Up": "บิวด์อัพ", "เบาลง": "เบาลง", "วนซ้ำ": "วนซ้ำ",
+      "จบเพลง": "จบเพลง", "1": "หนึ่ง", "2": "สอง", "3": "สาม", "4": "สี่"
+    };
+
+    const cueBuffers = {};
+    let isCuesLoaded = false;
+    let isLoadingInProgress = false;
 
     const keyFrequencies = {
-      "C": [130.81, 196.00, 261.63],
-      "C#": [138.59, 207.65, 277.18],
-      "D": [146.83, 220.00, 293.66],
-      "Eb": [155.56, 233.08, 311.13],
-      "E": [164.81, 246.94, 329.63],
-      "F": [174.61, 261.63, 349.23],
-      "F#": [185.00, 277.18, 369.99],
-      "G": [196.00, 293.66, 392.00],
-      "Ab": [207.65, 311.13, 415.30],
-      "A": [220.00, 330.00, 440.00],
-      "Bb": [233.08, 349.23, 466.16],
-      "B": [246.94, 369.99, 493.88]
+      "C": [130.81, 196.00, 261.63], "C#": [138.59, 207.65, 277.18], "D": [146.83, 220.00, 293.66],
+      "Eb": [155.56, 233.08, 311.13], "E": [164.81, 246.94, 329.63], "F": [174.61, 261.63, 349.23],
+      "F#": [185.00, 277.18, 369.99], "G": [196.00, 293.66, 392.00], "Ab": [207.65, 311.13, 415.30],
+      "A": [220.00, 330.00, 440.00], "Bb": [233.08, 349.23, 466.16], "B": [246.94, 369.99, 493.88]
     };
 
     const defaultSetlist = [
@@ -304,20 +321,17 @@
 
     let setlist = [];
     try {
-      const saved = localStorage.getItem('worship_cue_setlist_v8_voice');
+      const saved = localStorage.getItem('worship_cue_setlist_v12_matched');
       setlist = saved ? JSON.parse(saved) : defaultSetlist;
     } catch(e) {
       setlist = defaultSetlist;
     }
 
     let currentSongIndex = 0;
-
     function saveToStorage() {
       try {
-        localStorage.setItem('worship_cue_setlist_v8_voice', JSON.stringify(setlist));
-      } catch(e) {
-        console.error(e);
-      }
+        localStorage.setItem('worship_cue_setlist_v12_matched', JSON.stringify(setlist));
+      } catch(e) {}
     }
 
     let audioCtx = null;
@@ -336,59 +350,13 @@
     let currentBeat = 1;
     let nextNoteTime = 0.0;
     const lookaheadMs = 25.0;
-    const scheduleAheadSec = 0.1;
+    const scheduleAheadSec = 0.15;
 
     let isPadPlaying = false;
     let padOscillators = [];
     let padGainNode = null;
-
-    // ระบบล็อก Tempo / TAP
     let isTempoLocked = false;
-    function toggleLockTempo() {
-      isTempoLocked = !isTempoLocked;
-      const bpmInput = document.getElementById('bpmInput');
-      const tapBtn = document.getElementById('tapTempoBtn');
-      const lockIcon = document.getElementById('lockIcon');
-      const lockText = document.getElementById('lockText');
-      const lockBtn = document.getElementById('lockTapBtn');
-
-      if (isTempoLocked) {
-        bpmInput.disabled = true;
-        bpmInput.classList.add('opacity-50', 'cursor-not-allowed');
-        tapBtn.disabled = true;
-        tapBtn.classList.add('opacity-50', 'pointer-events-none');
-        lockIcon.innerText = "🔒";
-        lockText.innerText = "ล็อกแล้ว";
-        lockBtn.className = "px-2 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500 text-amber-300 font-bold transition flex items-center gap-1";
-      } else {
-        bpmInput.disabled = false;
-        bpmInput.classList.remove('opacity-50', 'cursor-not-allowed');
-        tapBtn.disabled = false;
-        tapBtn.classList.remove('opacity-50', 'pointer-events-none');
-        lockIcon.innerText = "🔓";
-        lockText.innerText = "ปลดล็อก";
-        lockBtn.className = "px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1";
-      }
-    }
-
     let wakeLockSentinel = null;
-    async function requestWakeLock() {
-      if ('wakeLock' in navigator) {
-        try {
-          wakeLockSentinel = await navigator.wakeLock.request('screen');
-          document.getElementById('wakeLockBadge').classList.remove('hidden');
-        } catch (err) {}
-      }
-    }
-
-    function releaseWakeLock() {
-      if (wakeLockSentinel) {
-        wakeLockSentinel.release().then(() => {
-          wakeLockSentinel = null;
-          document.getElementById('wakeLockBadge').classList.add('hidden');
-        });
-      }
-    }
 
     function ensureAudioContext() {
       if (!audioCtx) {
@@ -399,120 +367,70 @@
       }
     }
 
-    // Pad Synth
-    function togglePadSynth() {
-      ensureAudioContext();
-      isPadPlaying ? stopPadSynth() : startPadSynth();
-    }
-
-    function startPadSynth() {
-      if (isPadPlaying) return;
+    // โหลดไฟล์ WAV ทั้งหมดพร้อมกันผ่าน Promise.all
+    async function loadAllAudioCues() {
+      if (isLoadingInProgress || isCuesLoaded) return;
+      isLoadingInProgress = true;
       ensureAudioContext();
 
-      const key = document.getElementById('padKeySelect').value;
-      const freqs = keyFrequencies[key] || keyFrequencies["C"];
-      padGainNode = audioCtx.createGain();
-      padGainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-      padGainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 2.5);
+      const statusBadge = document.getElementById('loadStatusBadge');
+      const entries = Object.entries(cueAudioMap);
+      const totalCount = entries.length;
+      let loadedCount = 0;
 
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(550, audioCtx.currentTime);
+      statusBadge.className = "text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal";
+      statusBadge.innerText = `กำลังโหลด (0/${totalCount})...`;
 
-      padGainNode.connect(filter);
-      filter.connect(audioCtx.destination);
-
-      padOscillators = freqs.map((f, i) => {
-        const osc = audioCtx.createOscillator();
-        osc.type = (i % 2 === 0) ? 'triangle' : 'sine';
-        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-        osc.connect(padGainNode);
-        osc.start();
-        return osc;
+      const loadPromises = entries.map(async ([key, url]) => {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const arrayBuf = await res.arrayBuffer();
+            cueBuffers[key] = await audioCtx.decodeAudioData(arrayBuf);
+            loadedCount++;
+            statusBadge.innerText = `กำลังโหลด (${loadedCount}/${totalCount})...`;
+          }
+        } catch (err) {}
       });
 
-      isPadPlaying = true;
-      const btn = document.getElementById('togglePadBtn');
-      btn.className = "bg-amber-500 active:bg-amber-400 text-slate-950 font-bold px-2.5 py-1 rounded transition shadow";
-      btn.innerText = "ปิด Pad";
-    }
+      await Promise.all(loadPromises);
 
-    function stopPadSynth() {
-      if (!isPadPlaying || !padGainNode) return;
-      padGainNode.gain.setValueAtTime(padGainNode.gain.value, audioCtx.currentTime);
-      padGainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+      isCuesLoaded = true;
+      isLoadingInProgress = false;
 
-      setTimeout(() => {
-        padOscillators.forEach(osc => osc.stop());
-        padOscillators = [];
-        isPadPlaying = false;
-        const btn = document.getElementById('togglePadBtn');
-        btn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition";
-        btn.innerText = "เปิด Pad";
-      }, 1600);
-    }
-
-    // Tap Tempo
-    let tapTimes = [];
-    document.getElementById('tapTempoBtn').onclick = () => {
-      if (isTempoLocked) return;
-      const now = performance.now();
-      tapTimes.push(now);
-      if (tapTimes.length > 4) tapTimes.shift();
-
-      if (tapTimes.length >= 2) {
-        let intervals = [];
-        for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i - 1]);
-        const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-        let bpm = Math.round(60000 / avg);
-        bpm = Math.min(Math.max(bpm, 40), 220);
-        document.getElementById('bpmInput').value = bpm;
-        if (setlist[currentSongIndex]) {
-          setlist[currentSongIndex].bpm = bpm;
-          saveToStorage();
-          renderSetlist();
-        }
+      if (loadedCount > 0) {
+        statusBadge.className = "text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal";
+        statusBadge.innerText = `พร้อมใช้งาน (${loadedCount}/${totalCount} เสียง WAV)`;
+      } else {
+        statusBadge.className = "text-[10px] bg-rose-950 text-rose-300 border border-rose-600 px-2 py-0.5 rounded-full font-normal";
+        statusBadge.innerText = "ยังไม่พบไฟล์ WAV ใน cues/";
       }
-    };
+    }
 
-    // --- ระบบเสียงพูดพากย์ภาษาไทย ปรับแต่งแก้บั๊กบน iOS/iPadOS และ Android ---
-    window._speechQueueRef = [];
-
-    function speakThaiCue(text) {
-      if (!('speechSynthesis' in window)) return;
-
+    // ฟังก์ชันเล่นเสียงระดับเสี้ยววินาที
+    function playBufferCue(key, time) {
+      const buffer = cueBuffers[key];
       const cueVol = parseFloat(document.getElementById('cueVolumeSlider').value) || 1.0;
-      if (cueVol <= 0.01) return;
+      if (!buffer || !audioCtx || cueVol <= 0.01) return;
 
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
+      const source = audioCtx.createBufferSource();
+      const gain = audioCtx.createGain();
+      source.buffer = buffer;
+      gain.gain.setValueAtTime(cueVol, time);
+
+      const splitIEM = document.getElementById('splitIEMCheckbox').checked;
+      if (splitIEM && typeof audioCtx.createStereoPanner === 'function') {
+        const panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(1.0, time); // คิวออกหูขวา 100%
+        source.connect(gain);
+        gain.connect(panner);
+        panner.connect(audioCtx.destination);
+      } else {
+        source.connect(gain);
+        gain.connect(audioCtx.destination);
       }
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'th-TH';
-      utterance.rate = 1.35;
-      utterance.pitch = 1.0;
-      utterance.volume = cueVol;
-
-      // ผูกอ็อบเจ็กต์เข้ากับ Array ใน Global scope เพื่อป้องกัน Mobile GC เก็บกวาดขณะยังไม่จบประโยค
-      window._speechQueueRef.push(utterance);
-
-      utterance.onend = () => {
-        const idx = window._speechQueueRef.indexOf(utterance);
-        if (idx > -1) window._speechQueueRef.splice(idx, 1);
-      };
-
-      utterance.onerror = () => {
-        const idx = window._speechQueueRef.indexOf(utterance);
-        if (idx > -1) window._speechQueueRef.splice(idx, 1);
-        window.speechSynthesis.resume();
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const thaiVoice = voices.find(v => v.lang === 'th-TH' || v.lang.startsWith('th') || v.lang.includes('Thai'));
-      if (thaiVoice) utterance.voice = thaiVoice;
-
-      window.speechSynthesis.speak(utterance);
+      source.start(time);
     }
 
     function playClickSound(time, isAccent, splitIEM) {
@@ -529,7 +447,7 @@
 
       if (splitIEM && typeof audioCtx.createStereoPanner === 'function') {
         const panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(-1.0, time); // ออกหูซ้าย 100%
+        panner.pan.setValueAtTime(-1.0, time); // คลิกออกหูซ้าย 100%
         osc.connect(gain);
         gain.connect(panner);
         panner.connect(audioCtx.destination);
@@ -542,28 +460,6 @@
       osc.stop(time + 0.045);
     }
 
-    function toggleRepeatSection() {
-      isRepeatCurrentQueued = !isRepeatCurrentQueued;
-      const tag = document.getElementById('repeatActiveTag');
-      const btn = document.getElementById('repeatSectionBtn');
-      if (isRepeatCurrentQueued) {
-        tag.classList.remove('hidden');
-        btn.classList.add('bg-amber-600', 'text-slate-950');
-      } else {
-        tag.classList.add('hidden');
-        btn.classList.remove('bg-amber-600', 'text-slate-950');
-      }
-    }
-
-    function triggerNextSongAction() {
-      if (currentSongIndex >= setlist.length - 1) {
-        alert('เพลงนี้คือเพลงสุดท้ายใน Setlist แล้ว');
-        return;
-      }
-      isNextSongQueued = true;
-      updateCueDisplay('เตรียมเข้าเพลงถัดไป');
-    }
-
     function scheduleBeat(beatNumber, time) {
       const curSong = setlist[currentSongIndex];
       const splitIEM = document.getElementById('splitIEMCheckbox').checked;
@@ -572,71 +468,62 @@
 
       if (isPreCounting) {
         const firstSection = curSong.sections[0];
-        const firstSectionThai = thaiVoiceMap[firstSection.name] || firstSection.name;
-
         if (preCountBarsRemaining === 1) {
           if (beatNumber === 1) {
-            speakThaiCue(firstSectionThai);
-            updateCueDisplay(firstSectionThai);
-          } else if (beatNumber >= 2) {
-            speakThaiCue(thaiNumbers[beatNumber]);
-            updateCueDisplay(thaiNumbers[beatNumber]);
+            playBufferCue(firstSection.name, time);
+            updateCueDisplay(cueDisplayNames[firstSection.name] || firstSection.name);
+          } else {
+            playBufferCue(String(beatNumber), time);
+            updateCueDisplay(cueDisplayNames[String(beatNumber)]);
           }
         } else {
-          speakThaiCue(thaiNumbers[beatNumber]);
-          updateCueDisplay(thaiNumbers[beatNumber]);
+          playBufferCue(String(beatNumber), time);
+          updateCueDisplay(cueDisplayNames[String(beatNumber)]);
         }
       } else {
         const curSection = curSong.sections[currentSectionIdx];
         const isLastBarOfSection = (currentBar === curSection.bars);
         const isLastSectionOfSong = (currentSectionIdx === curSong.sections.length - 1);
         const hasNextSong = (currentSongIndex < setlist.length - 1);
-
         const isSongEnding = isLastBarOfSection && isLastSectionOfSong && (!hasNextSong || curSong.transitionMode === 'stop');
 
-        // 1. เสียงพูด "จบเพลง 2 3 4" ครั้งเดียวที่ห้องสุดท้าย
+        // 1. จบเพลง
         if (isSongEnding && !isRepeatCurrentQueued && !isNextSongQueued) {
           if (beatNumber === 1) {
-            speakThaiCue("จบเพลง");
+            playBufferCue("จบเพลง", time);
             updateCueDisplay("จบเพลง");
-          } else if (beatNumber >= 2) {
-            speakThaiCue(thaiNumbers[beatNumber]);
-            updateCueDisplay(thaiNumbers[beatNumber]);
+          } else {
+            playBufferCue(String(beatNumber), time);
+            updateCueDisplay(cueDisplayNames[String(beatNumber)]);
           }
           return;
         }
 
-        // 2. ข้ามไปเพลงถัดไป
+        // 2. ข้ามไปเพลงถัดไป (เล่นคิวท่อนแรกของเพลงถัดไป)
         if (isNextSongQueued || (isLastBarOfSection && isLastSectionOfSong && hasNextSong && curSong.transitionMode === 'seamless')) {
           const nextSong = setlist[currentSongIndex + 1];
           const nextSongFirstSec = nextSong.sections[0];
-          const firstSecName = thaiVoiceMap[nextSongFirstSec.name] || nextSongFirstSec.name;
-
           if (beatNumber === 1) {
-            speakThaiCue("เพลงถัดไป");
-            updateCueDisplay("เพลงถัดไป");
-          } else if (beatNumber === 2) {
-            speakThaiCue(firstSecName);
-            updateCueDisplay(firstSecName);
-          } else if (beatNumber >= 3) {
-            speakThaiCue(thaiNumbers[beatNumber]);
-            updateCueDisplay(thaiNumbers[beatNumber]);
+            playBufferCue(nextSongFirstSec.name, time);
+            updateCueDisplay(cueDisplayNames[nextSongFirstSec.name] || nextSongFirstSec.name);
+          } else {
+            playBufferCue(String(beatNumber), time);
+            updateCueDisplay(cueDisplayNames[String(beatNumber)]);
           }
           return;
         }
 
         // 3. วนท่อนเดิม
         if (isLastBarOfSection && isRepeatCurrentQueued) {
-          const sectionThai = thaiVoiceMap[curSection.name] || curSection.name;
           if (beatNumber === 1) {
-            speakThaiCue(sectionThai);
-            updateCueDisplay(sectionThai);
+            playBufferCue(curSection.name, time);
+            updateCueDisplay(cueDisplayNames[curSection.name] || curSection.name);
           } else if (beatNumber === 2) {
-            speakThaiCue("วนซ้ำ");
+            playBufferCue("วนซ้ำ", time);
             updateCueDisplay("วนซ้ำ");
-          } else if (beatNumber >= 3) {
-            speakThaiCue(thaiNumbers[beatNumber]);
-            updateCueDisplay(thaiNumbers[beatNumber]);
+          } else {
+            playBufferCue(String(beatNumber), time);
+            updateCueDisplay(cueDisplayNames[String(beatNumber)]);
           }
           return;
         }
@@ -644,14 +531,14 @@
         // 4. Free Praise
         if (isFreePraise && queuedNextSectionIndex !== null) {
           const targetSec = curSong.sections[queuedNextSectionIndex];
-          executeCue(beatNumber, targetSec);
+          executeCue(beatNumber, targetSec, time);
           return;
         }
 
         // 5. เปลี่ยนท่อนปกติ
         if (!isFreePraise && !isHoldingClick && isLastBarOfSection && !isLastSectionOfSong) {
           const nextSection = curSong.sections[currentSectionIdx + 1];
-          executeCue(beatNumber, nextSection);
+          executeCue(beatNumber, nextSection, time);
         }
       }
 
@@ -660,23 +547,24 @@
       }, Math.max(0, (time - audioCtx.currentTime) * 1000));
     }
 
-    function executeCue(beatNumber, nextSection) {
-      const nextThaiName = thaiVoiceMap[nextSection.name] || nextSection.name;
-      const dynamicCue = nextSection.dynamicCue;
-
+    function executeCue(beatNumber, nextSection, time) {
       if (beatNumber === 1) {
-        speakThaiCue(nextThaiName);
-        updateCueDisplay(nextThaiName);
+        playBufferCue(nextSection.name, time);
+        updateCueDisplay(cueDisplayNames[nextSection.name] || nextSection.name);
       } else if (beatNumber === 2) {
-        const cueText = dynamicCue ? (thaiVoiceMap[dynamicCue] || dynamicCue) : thaiNumbers[2];
-        speakThaiCue(cueText);
-        updateCueDisplay(cueText);
+        if (nextSection.dynamicCue) {
+          playBufferCue(nextSection.dynamicCue, time);
+          updateCueDisplay(cueDisplayNames[nextSection.dynamicCue] || nextSection.dynamicCue);
+        } else {
+          playBufferCue("2", time);
+          updateCueDisplay("สอง");
+        }
       } else if (beatNumber === 3) {
-        speakThaiCue(thaiNumbers[3]);
-        updateCueDisplay(thaiNumbers[3]);
+        playBufferCue("3", time);
+        updateCueDisplay("สาม");
       } else if (beatNumber === 4) {
-        speakThaiCue(thaiNumbers[4]);
-        updateCueDisplay(thaiNumbers[4]);
+        playBufferCue("4", time);
+        updateCueDisplay("สี่");
       }
     }
 
@@ -805,14 +693,7 @@
       if (!curSong || !curSong.sections.length) return alert('กรุณาเพิ่มท่อนเพลงก่อนเล่น');
 
       ensureAudioContext();
-
-      // ปลุก Web Speech Engine ล่วงหน้าเมื่อผู้ใช้กด Play
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.resume();
-        const dummyUtterance = new SpeechSynthesisUtterance('');
-        dummyUtterance.volume = 0;
-        window.speechSynthesis.speak(dummyUtterance);
-      }
+      if (!isCuesLoaded) await loadAllAudioCues();
 
       requestWakeLock();
       isPlaying = true;
@@ -845,11 +726,6 @@
       isNextSongQueued = false;
       queuedNextSectionIndex = null;
       clearTimeout(timerID);
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      window._speechQueueRef = [];
       releaseWakeLock();
 
       document.getElementById('playBtn').classList.remove('opacity-50', 'pointer-events-none');
@@ -901,6 +777,144 @@
       document.getElementById('displayCue').innerText = '-';
       document.getElementById('displayBar').innerText = '0 / 0';
       document.getElementById('displaySection').innerText = '-';
+    }
+
+    function toggleLockTempo() {
+      isTempoLocked = !isTempoLocked;
+      const bpmInput = document.getElementById('bpmInput');
+      const tapBtn = document.getElementById('tapTempoBtn');
+      const lockIcon = document.getElementById('lockIcon');
+      const lockText = document.getElementById('lockText');
+      const lockBtn = document.getElementById('lockTapBtn');
+
+      if (isTempoLocked) {
+        bpmInput.disabled = true;
+        bpmInput.classList.add('opacity-50', 'cursor-not-allowed');
+        tapBtn.disabled = true;
+        tapBtn.classList.add('opacity-50', 'pointer-events-none');
+        lockIcon.innerText = "🔒";
+        lockText.innerText = "ล็อกแล้ว";
+        lockBtn.className = "px-2 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500 text-amber-300 font-bold transition flex items-center gap-1";
+      } else {
+        bpmInput.disabled = false;
+        bpmInput.classList.remove('opacity-50', 'cursor-not-allowed');
+        tapBtn.disabled = false;
+        tapBtn.classList.remove('opacity-50', 'pointer-events-none');
+        lockIcon.innerText = "🔓";
+        lockText.innerText = "ปลดล็อก";
+        lockBtn.className = "px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 font-bold transition flex items-center gap-1";
+      }
+    }
+
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          document.getElementById('wakeLockBadge').classList.remove('hidden');
+        } catch (err) {}
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLockSentinel) {
+        wakeLockSentinel.release().then(() => {
+          wakeLockSentinel = null;
+          document.getElementById('wakeLockBadge').classList.add('hidden');
+        });
+      }
+    }
+
+    function togglePadSynth() {
+      ensureAudioContext();
+      isPadPlaying ? stopPadSynth() : startPadSynth();
+    }
+
+    function startPadSynth() {
+      if (isPadPlaying) return;
+      ensureAudioContext();
+
+      const key = document.getElementById('padKeySelect').value;
+      const freqs = keyFrequencies[key] || keyFrequencies["C"];
+      padGainNode = audioCtx.createGain();
+      padGainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      padGainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 2.5);
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(550, audioCtx.currentTime);
+
+      padGainNode.connect(filter);
+      filter.connect(audioCtx.destination);
+
+      padOscillators = freqs.map((f, i) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = (i % 2 === 0) ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+        osc.connect(padGainNode);
+        osc.start();
+        return osc;
+      });
+
+      isPadPlaying = true;
+      const btn = document.getElementById('togglePadBtn');
+      btn.className = "bg-amber-500 active:bg-amber-400 text-slate-950 font-bold px-2.5 py-1 rounded transition shadow";
+      btn.innerText = "ปิด Pad";
+    }
+
+    function stopPadSynth() {
+      if (!isPadPlaying || !padGainNode) return;
+      padGainNode.gain.setValueAtTime(padGainNode.gain.value, audioCtx.currentTime);
+      padGainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+
+      setTimeout(() => {
+        padOscillators.forEach(osc => osc.stop());
+        padOscillators = [];
+        isPadPlaying = false;
+        const btn = document.getElementById('togglePadBtn');
+        btn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 px-2.5 py-1 rounded font-bold transition";
+        btn.innerText = "เปิด Pad";
+      }, 1600);
+    }
+
+    let tapTimes = [];
+    document.getElementById('tapTempoBtn').onclick = () => {
+      if (isTempoLocked) return;
+      const now = performance.now();
+      tapTimes.push(now);
+      if (tapTimes.length > 4) tapTimes.shift();
+
+      if (tapTimes.length >= 2) {
+        let intervals = [];
+        for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i - 1]);
+        const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        let bpm = Math.round(60000 / avg);
+        bpm = Math.min(Math.max(bpm, 40), 220);
+        document.getElementById('bpmInput').value = bpm;
+        if (setlist[currentSongIndex]) {
+          setlist[currentSongIndex].bpm = bpm;
+          saveToStorage();
+          renderSetlist();
+        }
+      }
+    };
+
+    function toggleRepeatSection() {
+      isRepeatCurrentQueued = !isRepeatCurrentQueued;
+      const tag = document.getElementById('repeatActiveTag');
+      const btn = document.getElementById('repeatSectionBtn');
+      if (isRepeatCurrentQueued) {
+        tag.classList.remove('hidden');
+        btn.classList.add('bg-amber-600', 'text-slate-950');
+      } else {
+        tag.classList.add('hidden');
+        btn.classList.remove('bg-amber-600', 'text-slate-950');
+      }
+    }
+
+    function triggerNextSongAction() {
+      if (currentSongIndex >= setlist.length - 1) return alert('เพลงนี้คือเพลงสุดท้ายใน Setlist แล้ว');
+      isNextSongQueued = true;
+      updateCueDisplay('เตรียมเข้าเพลงถัดไป');
     }
 
     function toggleFreePraiseMode() {
@@ -1120,7 +1134,7 @@
       }
     }
 
-    // Render WAV พร้อมเสียง Cue
+    // Export Track WAV
     async function renderAudioWAVWithVoice() {
       const curSong = setlist[currentSongIndex];
       if (!curSong || !curSong.sections.length) return alert('ไม่มีโครงสร้างเพลงให้ Render');
@@ -1140,41 +1154,9 @@
         const offlineCtx = new OfflineAudioContext(2, sampleRate * totalDuration, sampleRate);
         let scheduleTime = 0.5;
 
-        function renderOfflineCue(time, pitchFreq) {
-          const osc = offlineCtx.createOscillator();
-          const filter = offlineCtx.createBiquadFilter();
-          const gain = offlineCtx.createGain();
-          const panner = offlineCtx.createStereoPanner();
-
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(pitchFreq, time);
-
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(850, time);
-          filter.Q.value = 4.0;
-
-          gain.gain.setValueAtTime(0.9, time);
-          gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
-
-          panner.pan.setValueAtTime(1.0, time);
-
-          osc.connect(filter);
-          filter.connect(gain);
-          gain.connect(panner);
-          panner.connect(offlineCtx.destination);
-
-          osc.start(time);
-          osc.stop(time + 0.19);
-        }
-
         for (let sIdx = 0; sIdx < curSong.sections.length; sIdx++) {
           const sec = curSong.sections[sIdx];
-          const isLastSection = (sIdx === curSong.sections.length - 1);
-          const nextSec = curSong.sections[sIdx + 1];
-
           for (let b = 1; b <= sec.bars; b++) {
-            const isLastBarOfSec = (b === sec.bars);
-
             for (let beat = 1; beat <= 4; beat++) {
               const isAccent = (beat === 1);
               const clickOsc = offlineCtx.createOscillator();
@@ -1193,20 +1175,6 @@
 
               clickOsc.start(scheduleTime);
               clickOsc.stop(scheduleTime + 0.045);
-
-              // ใส่เสียงคิวห้องส่ง
-              if (isLastBarOfSec && isLastSection) {
-                if (beat === 1) renderOfflineCue(scheduleTime, 480);
-                else if (beat === 2) renderOfflineCue(scheduleTime, 400);
-                else if (beat === 3) renderOfflineCue(scheduleTime, 350);
-                else if (beat === 4) renderOfflineCue(scheduleTime, 300);
-              } else if (isLastBarOfSec && nextSec) {
-                if (beat === 1) renderOfflineCue(scheduleTime, 440);
-                else if (beat === 2) renderOfflineCue(scheduleTime, 400);
-                else if (beat === 3) renderOfflineCue(scheduleTime, 350);
-                else if (beat === 4) renderOfflineCue(scheduleTime, 300);
-              }
-
               scheduleTime += secondsPerBeat;
             }
           }
@@ -1218,14 +1186,13 @@
         const url = URL.createObjectURL(wavBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${curSong.title}_StereoSplit_Track_${bpm}BPM.wav`;
+        a.download = `${curSong.title}_Track_${bpm}BPM.wav`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
       } catch (err) {
-        console.error(err);
-        alert('เกิดข้อผิดพลาดในการ Render ไฟล์เสียง');
+        alert('เกิดข้อผิดพลาดในการ Render');
       } finally {
         btn.innerHTML = originalText;
         btn.classList.remove('opacity-50', 'pointer-events-none');
@@ -1242,19 +1209,10 @@
       function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
       function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
 
-      setUint32(0x46464952);
-      setUint32(length - 8);
-      setUint32(0x45564157);
-      setUint32(0x20746d66);
-      setUint32(16);
-      setUint16(1);
-      setUint16(numOfChan);
-      setUint32(abuffer.sampleRate);
-      setUint32(abuffer.sampleRate * 2 * numOfChan);
-      setUint16(numOfChan * 2);
-      setUint16(16);
-      setUint32(0x61746164);
-      setUint32(length - pos - 4);
+      setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+      setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+      setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+      setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
 
       const channels = [];
       for (let i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
@@ -1274,17 +1232,15 @@
 
     function exportJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(setlist, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `worship_setlist_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `worship_setlist_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
 
-    function triggerImportJSON() {
-      document.getElementById('importFileInput').click();
-    }
+    function triggerImportJSON() { document.getElementById('importFileInput').click(); }
 
     function importJSON(event) {
       const file = event.target.files[0];
@@ -1299,11 +1255,9 @@
             saveToStorage();
             renderSetlist();
             renderTimeline();
-            alert('นำเข้า Setlist สำเร็จเรียบร้อย');
+            alert('นำเข้า Setlist สำเร็จ');
           }
-        } catch(err) {
-          alert('รูปแบบไฟล์ไม่ถูกต้อง');
-        }
+        } catch(err) { alert('ไฟล์ไม่ถูกต้อง'); }
       };
       reader.readAsText(file);
     }
@@ -1335,13 +1289,18 @@
       }
     };
 
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-    }
-
+    // แสดงผล UI
     renderSetlist();
     renderTimeline();
     updateUI(1);
+
+    // โหลดเสียง WAV ทันทีที่มีการแตะหน้าจอครั้งแรก
+    window.addEventListener('click', () => {
+      if (!isCuesLoaded) loadAllAudioCues();
+    }, { once: true });
+    window.addEventListener('touchstart', () => {
+      if (!isCuesLoaded) loadAllAudioCues();
+    }, { once: true });
   </script>
 </body>
 </html>
