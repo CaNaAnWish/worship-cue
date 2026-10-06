@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Worship Cue & Click - Live Pro (Weekly Edition)</title>
+  <title>Worship Cue & Click - Live Pro Stage</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -25,13 +25,18 @@
           <span id="loadStatusBadge" class="text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal">กำลังโหลดเสียง...</span>
           <span id="wakeLockBadge" class="hidden text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
         </h1>
-        <p class="text-[11px] text-slate-400">ระบบคิวเสียงภาษาไทย & เมโทรนอมนำร่อง (Weekly Setlist Pro)</p>
+        <p class="text-[11px] text-slate-400">ระบบคิวเสียงภาษาไทย & เมโทรนอมนำร่อง (Stage Pro)</p>
       </div>
     </div>
 
-    <!-- ส่วนตั้งค่าหลัก -->
+    <!-- ส่วนตั้งค่าหลัก และปุ่ม Stage Mode -->
     <div class="flex items-center gap-2 flex-wrap text-xs">
       
+      <!-- ปุ่มสลับ Stage Mode ขนาดใหญ่ -->
+      <button id="toggleStageModeBtn" onclick="toggleStageMode()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg transition active:scale-95 text-xs">
+        <span id="stageBtnIcon">🖥️</span> <span id="stageBtnText">Stage View</span>
+      </button>
+
       <!-- BPM & Tap -->
       <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
         <label class="text-slate-300 ml-1 font-medium">BPM:</label>
@@ -113,180 +118,268 @@
     </div>
   </header>
 
-  <!-- หน้าจอสถานะ Realtime & ตัวจับเวลา -->
-  <section class="bg-slate-950 px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-3">
-    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-      <span class="text-slate-400">Section:</span>
-      <span id="displaySection" class="font-bold text-amber-400 bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-800/80 font-mono text-base sm:text-lg">-</span>
-      <span class="text-slate-400">Bar:</span>
-      <span id="displayBar" class="font-bold text-white bg-slate-800 px-3 py-1.5 rounded-lg font-mono text-base sm:text-lg">0 / 0</span>
-      <span id="repeatActiveTag" class="hidden text-xs bg-rose-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">🔁 วนท่อนเดิม</span>
-      <span id="jumpActiveTag" class="hidden text-xs bg-cyan-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">👉 เตรียมโดดท่อน</span>
-      <span id="holdClickBanner" class="hidden text-xs bg-purple-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">⏸ คลิกวนค้าง</span>
-      <span id="fpBanner" class="hidden text-xs bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-full pulse-glow">🕊️ FREE PRAISE</span>
-    </div>
-
-    <!-- ตัวจับเวลาเพลง & รวมทั้งรอบ -->
-    <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-xs">
-      <div class="flex items-center gap-1">
-        <span class="text-slate-400">Song:</span>
-        <span id="songTimerDisplay" class="font-bold text-amber-400 text-sm">00:00</span>
+  <!-- ========================================== -->
+  <!-- 1. STAGE MODE VIEW (จอใหญ่หน้าเวที) -->
+  <!-- ========================================== -->
+  <div id="stageModeContainer" class="hidden flex-1 flex-col p-4 sm:p-8 justify-between max-w-6xl mx-auto w-full gap-6">
+    
+    <!-- ส่วนหัวชื่อเพลง & เวลา -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div>
+        <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">กำลังเล่นเพลง</span>
+        <h2 id="stageSongTitle" class="text-2xl sm:text-4xl font-extrabold text-white mt-1">-</h2>
       </div>
-      <span class="text-slate-600">|</span>
-      <div class="flex items-center gap-1">
-        <span class="text-slate-400">Total:</span>
-        <span id="totalTimerDisplay" class="font-bold text-sky-400 text-sm">00:00</span>
+      <div class="flex items-center gap-4 bg-slate-950 border border-slate-800 px-5 py-3 rounded-2xl font-mono text-base sm:text-xl">
+        <div class="text-center">
+          <span class="text-[10px] text-slate-400 block font-sans">เพลงนี้</span>
+          <span id="stageSongTimer" class="font-bold text-amber-400">00:00</span>
+        </div>
+        <span class="text-slate-700">|</span>
+        <div class="text-center">
+          <span class="text-[10px] text-slate-400 block font-sans">รวม</span>
+          <span id="stageTotalTimer" class="font-bold text-sky-400">00:00</span>
+        </div>
       </div>
     </div>
 
-    <!-- บีต 1-4 -->
-    <div class="flex items-center gap-2">
-      <span class="text-slate-400 mr-1 text-xs">Beat:</span>
-      <div id="beat1" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">1</div>
-      <div id="beat2" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">2</div>
-      <div id="beat3" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">3</div>
-      <div id="beat4" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">4</div>
+    <!-- ส่วนท่อนปัจจุบัน & ท่อนถัดไป (NOW & NEXT) ขนาดใหญ่พิเศษ -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+      <!-- Now Section -->
+      <div class="md:col-span-7 bg-slate-950 border-2 border-amber-500/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs sm:text-sm text-slate-400 mb-2">
+          <span class="uppercase tracking-widest font-bold text-amber-400 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> ท่อนปัจจุบัน (NOW)
+          </span>
+          <span id="stageBarCount" class="font-mono text-lg sm:text-2xl font-black text-white bg-slate-800 px-3 py-1 rounded-xl">0 / 0</span>
+        </div>
+        <div id="stageCurrentSection" class="text-4xl sm:text-6xl font-black text-amber-300 tracking-tight mt-2">-</div>
+        
+        <!-- แถบสถานะพิเศษในท่อน -->
+        <div class="mt-4 flex items-center gap-2 flex-wrap">
+          <span id="stageRepeatTag" class="hidden text-xs bg-rose-600 text-white font-bold px-3 py-1 rounded-full pulse-glow">🔁 กำลังจะวนท่อนนี้ซ้ำ</span>
+          <span id="stageJumpTag" class="hidden text-xs bg-cyan-600 text-white font-bold px-3 py-1 rounded-full pulse-glow">👉 กำลังจะโดดข้ามท่อน</span>
+          <span id="stageFpTag" class="hidden text-xs bg-amber-500 text-slate-950 font-black px-3 py-1 rounded-full pulse-glow">🕊️️ FREE PRAISE (ลูปไม่จำกัด)</span>
+        </div>
+      </div>
+
+      <!-- Next Section Indicator -->
+      <div class="md:col-span-5 bg-slate-950/70 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between h-full">
+        <span class="text-xs sm:text-sm uppercase tracking-widest font-bold text-sky-400">ท่อนถัดไป (NEXT)</span>
+        <div id="stageNextSection" class="text-2xl sm:text-4xl font-extrabold text-sky-200 mt-2 truncate">-</div>
+        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <span>คิวเสียงไทย:</span>
+          <span id="stageCueVoice" class="text-sm font-bold text-emerald-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">-</span>
+        </div>
+      </div>
     </div>
 
-    <div class="flex items-center gap-2">
-      <span class="text-slate-400 text-xs">คิวเสียงไทย:</span>
-      <span id="displayCue" class="font-mono bg-slate-800 text-sky-400 px-4 py-1.5 rounded-lg border border-slate-700 min-w-[120px] text-center font-bold text-sm sm:text-base">-</span>
+    <!-- บีต 1-4 ขนาดใหญ่สะใจ (Big Beats) -->
+    <div class="grid grid-cols-4 gap-3 sm:gap-6 py-2">
+      <div id="stageBeat1" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">1</div>
+      <div id="stageBeat2" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">2</div>
+      <div id="stageBeat3" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">3</div>
+      <div id="stageBeat4" class="h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg">4</div>
     </div>
-  </section>
 
-  <!-- ปุ่ม Action หน้าเวที -->
-  <section class="bg-slate-950/80 px-4 py-2.5 border-b border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
-    <button id="playBtn" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
-      <span class="text-lg">▶</span> เริ่มเล่น (Space)
-    </button>
-    <button id="stopBtn" class="bg-rose-700 active:bg-rose-600 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
-      <span class="text-lg">⏹</span> หยุด
-    </button>
-    <button id="repeatSectionBtn" onclick="toggleRepeatSection()" class="bg-slate-700 active:bg-slate-600 text-amber-300 font-bold py-3 rounded-xl border border-slate-600 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
-      <span class="text-base">🔁</span> วนท่อนเดิม (R)
-    </button>
-    <button id="triggerNextSongBtn" onclick="triggerNextSongAction()" class="bg-indigo-900/80 active:bg-indigo-700 text-indigo-100 font-bold py-3 rounded-xl border border-indigo-500/80 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
-      <span class="text-base">⏭</span> ส่งเข้าเพลงถัดไป
-    </button>
-  </section>
-
-  <!-- แผง Free Praise -->
-  <div id="freePraiseControlPanel" class="bg-indigo-950/60 border-b border-indigo-800/60 px-4 sm:px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs">
-    <div class="flex items-center gap-2">
-      <button id="toggleFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm active:scale-95">
-        <span>🕊️</span> เปิด Free Praise (F)
+    <!-- ปุ่มควบคุมสดหน้าเวทีขนาดใหญ่พิเศษ (Big Stage Controls) -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <button id="stagePlayBtn" onclick="startPlayback()" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl text-base sm:text-lg active:scale-95 transition">
+        <span>▶</span> เริ่มเล่น
       </button>
-      <span class="text-slate-400 hidden sm:inline">คลิกจะวนลูปต่อเนื่องเพื่อให้นมัสการอิสระ</span>
+      <button onclick="stopPlayback()" class="bg-rose-700 active:bg-rose-600 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl text-base sm:text-lg active:scale-95 transition">
+        <span>⏹</span> หยุด
+      </button>
+      <button id="stageRepeatBtn" onclick="toggleRepeatSection()" class="bg-slate-800 active:bg-slate-700 text-amber-300 font-bold py-4 rounded-2xl border border-slate-700 flex items-center justify-center gap-1.5 shadow-xl text-sm sm:text-base active:scale-95 transition">
+        <span>🔁</span> วนท่อนเดิม
+      </button>
+      <button id="stageFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-800 active:bg-slate-700 text-slate-200 font-bold py-4 rounded-2xl border border-slate-700 flex items-center justify-center gap-1.5 shadow-xl text-sm sm:text-base active:scale-95 transition">
+        <span>🕊️</span> Free Praise
+      </button>
+      <button onclick="triggerNextSongAction()" class="col-span-2 sm:col-span-1 bg-indigo-900 active:bg-indigo-700 text-indigo-100 font-bold py-4 rounded-2xl border border-indigo-600 flex items-center justify-center gap-1.5 shadow-xl text-sm sm:text-base active:scale-95 transition">
+        <span>⏭</span> เพลงถัดไป
+      </button>
     </div>
 
-    <div id="fpExitControls" class="hidden items-center gap-2 flex-wrap">
-      <span class="text-amber-300 font-bold">ส่งออกจาก Free เข้าท่อน:</span>
-      <div id="fpTargetButtons" class="flex items-center gap-1.5 flex-wrap"></div>
-    </div>
   </div>
 
-  <!-- Workspace 3 Columns -->
-  <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
-    <!-- Setlist (คอลัมน์ซ้าย) พร้อมระบบ Weekly Setlist Manager -->
-    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-2.5">
-      
-      <!-- Weekly Setlist Manager Panel -->
-      <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2 shadow-md">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-            <span>📅</span> Setlist ประจำสัปดาห์
-          </span>
-          <button onclick="saveCurrentAsWeeklySetlist()" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-2 py-0.5 rounded transition">
-            + บันทึกสัปดาห์นี้
-          </button>
-        </div>
-
-        <div class="flex items-center gap-1.5">
-          <select id="weeklySetlistDropdown" onchange="loadSelectedWeeklySetlist(this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs rounded-lg px-2 py-1.5 flex-1 focus:outline-none font-medium">
-            <!-- รายชื่อสัปดาห์จะถูกเรนเดอร์ที่นี่ -->
-          </select>
-          <button onclick="deleteSelectedWeeklySetlist()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 px-2 py-1.5 rounded-lg" title="ลบสัปดาห์นี้">
-            🗑️
-          </button>
-        </div>
+  <!-- ========================================== -->
+  <!-- 2. SETUP VIEW (โหมดจัดการไทม์ไลน์ปกติ) -->
+  <!-- ========================================== -->
+  <div id="setupModeContainer" class="flex-1 flex flex-col">
+    <!-- หน้าจอสถานะ Realtime & ตัวจับเวลา -->
+    <section class="bg-slate-950 px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <span class="text-slate-400">Section:</span>
+        <span id="displaySection" class="font-bold text-amber-400 bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-800/80 font-mono text-base sm:text-lg">-</span>
+        <span class="text-slate-400">Bar:</span>
+        <span id="displayBar" class="font-bold text-white bg-slate-800 px-3 py-1.5 rounded-lg font-mono text-base sm:text-lg">0 / 0</span>
+        <span id="repeatActiveTag" class="hidden text-xs bg-rose-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">🔁 วนท่อนเดิม</span>
+        <span id="jumpActiveTag" class="hidden text-xs bg-cyan-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">👉 เตรียมโดดท่อน</span>
+        <span id="holdClickBanner" class="hidden text-xs bg-purple-600 text-white font-bold px-2.5 py-1 rounded-full pulse-glow">⏸ คลิกวนค้าง</span>
+        <span id="fpBanner" class="hidden text-xs bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-full pulse-glow">🕊️ FREE PRAISE</span>
       </div>
 
-      <!-- แถบจัดการเพลงใน Setlist ปัจจุบัน -->
-      <div class="flex items-center justify-between pt-1">
-        <h2 class="font-bold text-xs text-slate-200 flex items-center gap-1.5">
-          <span>📋</span> เพลงในลิสต์ (<span id="setlistCount">0</span> เพลง)
-        </h2>
+      <!-- ตัวจับเวลาเพลง & รวมทั้งรอบ -->
+      <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-xs">
         <div class="flex items-center gap-1">
-          <button onclick="addNewSong()" class="text-[11px] bg-indigo-600 active:bg-indigo-500 text-white font-medium px-2 py-1 rounded transition">+ เพลงใหม่</button>
-          <button onclick="openSongLibraryModal()" class="text-[11px] bg-amber-600 active:bg-amber-500 text-white font-medium px-2 py-1 rounded transition shadow">📚 คลังเพลง</button>
+          <span class="text-slate-400">Song:</span>
+          <span id="songTimerDisplay" class="font-bold text-amber-400 text-sm">00:00</span>
         </div>
-      </div>
-
-      <!-- แถบ Export/Import -->
-      <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 text-[10px]">
+        <span class="text-slate-600">|</span>
         <div class="flex items-center gap-1">
-          <button onclick="exportCurrentSongJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600" title="เซฟเพลงเดี่ยว">💾 เซฟเพลงนี้</button>
-          <button onclick="saveCurrentSongToLibrary()" class="bg-slate-700 active:bg-slate-600 text-amber-300 px-2 py-0.5 rounded border border-slate-600" title="เก็บเข้าคลัง">+ เก็บเข้าคลัง</button>
-        </div>
-        <div class="flex items-center gap-1">
-          <button onclick="exportSetlistJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Export</button>
-          <button onclick="triggerImportJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Import</button>
-          <input type="file" id="importFileInput" class="hidden" accept=".json" onchange="importJSON(event)">
+          <span class="text-slate-400">Total:</span>
+          <span id="totalTimerDisplay" class="font-bold text-sky-400 text-sm">00:00</span>
         </div>
       </div>
 
-      <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[460px] pr-1"></div>
-    </div>
-
-    <!-- Sections Palettes (คอลัมน์กลาง) -->
-    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-4">
-      <div>
-        <h2 class="font-bold text-xs text-slate-200 mb-2">🏷️ Sections (แตะเพิ่มลงไทม์ไลน์)</h2>
-        <div class="grid grid-cols-3 gap-1.5 text-xs font-semibold">
-          <button onclick="addSection('Intro', 4)" class="bg-slate-700 active:bg-slate-600 text-left p-2 rounded border border-slate-600 text-white transition active:scale-95">Intro (4)</button>
-          <button onclick="addSection('Verse 1', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 1 (8)</button>
-          <button onclick="addSection('Verse 2', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 2 (8)</button>
-          <button onclick="addSection('Verse 3', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 3 (8)</button>
-          <button onclick="addSection('Verse 4', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 4 (8)</button>
-          <button onclick="addSection('Verse 5', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 5 (8)</button>
-          <button onclick="addSection('Verse 6', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 6 (8)</button>
-          <button onclick="addSection('Pre-Chorus', 4)" class="bg-cyan-900/60 active:bg-cyan-800 text-left p-2 rounded border border-cyan-700 text-cyan-200 transition active:scale-95">Pre-Chorus (4)</button>
-          <button onclick="addSection('Chorus', 8)" class="bg-amber-900/60 active:bg-amber-800 text-left p-2 rounded border border-amber-700 text-amber-200 transition active:scale-95">Chorus (8)</button>
-          <button onclick="addSection('Bridge', 8)" class="bg-purple-900/60 active:bg-purple-800 text-left p-2 rounded border border-purple-700 text-purple-200 transition active:scale-95">Bridge (8)</button>
-          <button onclick="addSection('Interlude', 4)" class="bg-emerald-900/60 active:bg-emerald-800 text-left p-2 rounded border border-emerald-700 text-emerald-200 transition active:scale-95">Interlude (4)</button>
-          <button onclick="addSection('Instrumental', 4)" class="bg-emerald-950/80 active:bg-emerald-800 text-left p-2 rounded border border-emerald-600 text-emerald-300 transition active:scale-95">Inst. (4)</button>
-          <button onclick="addSection('Solo', 4)" class="bg-orange-950/80 active:bg-orange-800 text-left p-2 rounded border border-orange-600 text-orange-300 transition active:scale-95">Solo (4)</button>
-          <button onclick="addSection('Tag', 2)" class="bg-teal-950/80 active:bg-teal-800 text-left p-2 rounded border border-teal-600 text-teal-300 transition active:scale-95">Tag (2)</button>
-          <button onclick="addSection('Outro', 4)" class="bg-fuchsia-900/60 active:bg-fuchsia-800 text-left p-2 rounded border border-fuchsia-700 text-fuchsia-200 transition active:scale-95">Outro (4)</button>
-          <button onclick="addSection('Ending', 4)" class="bg-rose-900/60 active:bg-rose-800 text-left p-2 rounded border border-rose-700 text-rose-200 transition active:scale-95">Ending (4)</button>
-        </div>
+      <!-- บีต 1-4 -->
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400 mr-1 text-xs">Beat:</span>
+        <div id="beat1" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">1</div>
+        <div id="beat2" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">2</div>
+        <div id="beat3" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">3</div>
+        <div id="beat4" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base">4</div>
       </div>
 
-      <div class="border-t border-slate-700 pt-3">
-        <h2 class="font-bold text-xs text-slate-200 mb-1">⚡ Dynamic Cues (บีตที่ 2)</h2>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <div class="bg-amber-950/60 border border-amber-600/60 p-2 rounded-lg text-amber-300 font-medium">🔥 All In (พร้อมกัน)</div>
-          <div class="bg-blue-950/60 border border-blue-600/60 p-2 rounded-lg text-blue-300 font-medium">📈 Build Up</div>
-          <div class="bg-teal-950/60 border border-teal-600/60 p-2 rounded-lg text-teal-300 font-medium">💧 Down (เบาลง)</div>
-          <div class="bg-purple-950/60 border border-purple-600/60 p-2 rounded-lg text-purple-300 font-medium">🔁 Repeat (วนซ้ำ)</div>
-        </div>
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400 text-xs">คิวเสียงไทย:</span>
+        <span id="displayCue" class="font-mono bg-slate-800 text-sky-400 px-4 py-1.5 rounded-lg border border-slate-700 min-w-[120px] text-center font-bold text-sm sm:text-base">-</span>
+      </div>
+    </section>
+
+    <!-- ปุ่ม Action ปกติ -->
+    <section class="bg-slate-950/80 px-4 py-2.5 border-b border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button id="playBtn" class="bg-emerald-600 active:bg-emerald-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
+        <span class="text-lg">▶</span> เริ่มเล่น (Space)
+      </button>
+      <button id="stopBtn" class="bg-rose-700 active:bg-rose-600 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-sm sm:text-base">
+        <span class="text-lg">⏹</span> หยุด
+      </button>
+      <button id="repeatSectionBtn" onclick="toggleRepeatSection()" class="bg-slate-700 active:bg-slate-600 text-amber-300 font-bold py-3 rounded-xl border border-slate-600 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
+        <span class="text-base">🔁</span> วนท่อนเดิม (R)
+      </button>
+      <button id="triggerNextSongBtn" onclick="triggerNextSongAction()" class="bg-indigo-900/80 active:bg-indigo-700 text-indigo-100 font-bold py-3 rounded-xl border border-indigo-500/80 flex items-center justify-center gap-2 transition active:scale-95 text-xs sm:text-sm shadow">
+        <span class="text-base">⏭</span> ส่งเข้าเพลงถัดไป
+      </button>
+    </section>
+
+    <!-- แผง Free Praise -->
+    <div id="freePraiseControlPanel" class="bg-indigo-950/60 border-b border-indigo-800/60 px-4 sm:px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs">
+      <div class="flex items-center gap-2">
+        <button id="toggleFpBtn" onclick="toggleFreePraiseMode()" class="bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm active:scale-95">
+          <span>🕊️️</span> เปิด Free Praise (F)
+        </button>
+        <span class="text-slate-400 hidden sm:inline">คลิกจะวนลูปต่อเนื่องเพื่อให้นมัสการอิสระ</span>
+      </div>
+
+      <div id="fpExitControls" class="hidden items-center gap-2 flex-wrap">
+        <span class="text-amber-300 font-bold">ส่งออกจาก Free เข้าท่อน:</span>
+        <div id="fpTargetButtons" class="flex items-center gap-1.5 flex-wrap"></div>
       </div>
     </div>
 
-    <!-- Timeline (คอลัมน์ขวา) -->
-    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
-          <h2 class="font-bold text-xs text-slate-200">🎼 Timeline</h2>
-          <span id="currentSongTitleHeader" class="text-xs bg-slate-700 text-amber-400 px-2 py-0.5 rounded font-bold font-mono"></span>
-        </div>
-        <span class="text-[11px] text-slate-400">ลากสลับ / กดโดดท่อนได้</span>
-      </div>
-      <div id="timelineContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[500px] pr-1"></div>
-    </div>
-  </main>
+    <!-- Workspace 3 Columns -->
+    <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
+      <!-- Setlist (คอลัมน์ซ้าย) -->
+      <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-2.5">
+        
+        <!-- Weekly Setlist Manager Panel -->
+        <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+              <span>📅</span> Setlist ประจำสัปดาห์
+            </span>
+            <button onclick="saveCurrentAsWeeklySetlist()" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-2 py-0.5 rounded transition">
+              + บันทึกสัปดาห์นี้
+            </button>
+          </div>
 
-  <!-- Modal หน้าต่างคลังเพลงกลาง (Song Library Modal) -->
+          <div class="flex items-center gap-1.5">
+            <select id="weeklySetlistDropdown" onchange="loadSelectedWeeklySetlist(this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs rounded-lg px-2 py-1.5 flex-1 focus:outline-none font-medium">
+            </select>
+            <button onclick="deleteSelectedWeeklySetlist()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 px-2 py-1.5 rounded-lg" title="ลบสัปดาห์นี้">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- แถบจัดการเพลงใน Setlist ปัจจุบัน -->
+        <div class="flex items-center justify-between pt-1">
+          <h2 class="font-bold text-xs text-slate-200 flex items-center gap-1.5">
+            <span>📋</span> เพลงในลิสต์ (<span id="setlistCount">0</span> เพลง)
+          </h2>
+          <div class="flex items-center gap-1">
+            <button onclick="addNewSong()" class="text-[11px] bg-indigo-600 active:bg-indigo-500 text-white font-medium px-2 py-1 rounded transition">+ เพลงใหม่</button>
+            <button onclick="openSongLibraryModal()" class="text-[11px] bg-amber-600 active:bg-amber-500 text-white font-medium px-2 py-1 rounded transition shadow">📚 คลังเพลง</button>
+          </div>
+        </div>
+
+        <!-- แถบ Export/Import -->
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 text-[10px]">
+          <div class="flex items-center gap-1">
+            <button onclick="exportCurrentSongJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600" title="เซฟเพลงเดี่ยว">💾 เซฟเพลงนี้</button>
+            <button onclick="saveCurrentSongToLibrary()" class="bg-slate-700 active:bg-slate-600 text-amber-300 px-2 py-0.5 rounded border border-slate-600" title="เก็บเข้าคลัง">+ เก็บเข้าคลัง</button>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="exportSetlistJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Export</button>
+            <button onclick="triggerImportJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Import</button>
+            <input type="file" id="importFileInput" class="hidden" accept=".json" onchange="importJSON(event)">
+          </div>
+        </div>
+
+        <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[460px] pr-1"></div>
+      </div>
+
+      <!-- Sections Palettes (คอลัมน์กลาง) -->
+      <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-4">
+        <div>
+          <h2 class="font-bold text-xs text-slate-200 mb-2">🏷️ Sections (แตะเพิ่มลงไทม์ไลน์)</h2>
+          <div class="grid grid-cols-3 gap-1.5 text-xs font-semibold">
+            <button onclick="addSection('Intro', 4)" class="bg-slate-700 active:bg-slate-600 text-left p-2 rounded border border-slate-600 text-white transition active:scale-95">Intro (4)</button>
+            <button onclick="addSection('Verse 1', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 1 (8)</button>
+            <button onclick="addSection('Verse 2', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 2 (8)</button>
+            <button onclick="addSection('Verse 3', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 3 (8)</button>
+            <button onclick="addSection('Verse 4', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 4 (8)</button>
+            <button onclick="addSection('Verse 5', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 5 (8)</button>
+            <button onclick="addSection('Verse 6', 8)" class="bg-blue-900/60 active:bg-blue-800 text-left p-2 rounded border border-blue-700 text-blue-200 transition active:scale-95">Verse 6 (8)</button>
+            <button onclick="addSection('Pre-Chorus', 4)" class="bg-cyan-900/60 active:bg-cyan-800 text-left p-2 rounded border border-cyan-700 text-cyan-200 transition active:scale-95">Pre-Chorus (4)</button>
+            <button onclick="addSection('Chorus', 8)" class="bg-amber-900/60 active:bg-amber-800 text-left p-2 rounded border border-amber-700 text-amber-200 transition active:scale-95">Chorus (8)</button>
+            <button onclick="addSection('Bridge', 8)" class="bg-purple-900/60 active:bg-purple-800 text-left p-2 rounded border border-purple-700 text-purple-200 transition active:scale-95">Bridge (8)</button>
+            <button onclick="addSection('Interlude', 4)" class="bg-emerald-900/60 active:bg-emerald-800 text-left p-2 rounded border border-emerald-700 text-emerald-200 transition active:scale-95">Interlude (4)</button>
+            <button onclick="addSection('Instrumental', 4)" class="bg-emerald-950/80 active:bg-emerald-800 text-left p-2 rounded border border-emerald-600 text-emerald-300 transition active:scale-95">Inst. (4)</button>
+            <button onclick="addSection('Solo', 4)" class="bg-orange-950/80 active:bg-orange-800 text-left p-2 rounded border border-orange-600 text-orange-300 transition active:scale-95">Solo (4)</button>
+            <button onclick="addSection('Tag', 2)" class="bg-teal-950/80 active:bg-teal-800 text-left p-2 rounded border border-teal-600 text-teal-300 transition active:scale-95">Tag (2)</button>
+            <button onclick="addSection('Outro', 4)" class="bg-fuchsia-900/60 active:bg-fuchsia-800 text-left p-2 rounded border border-fuchsia-700 text-fuchsia-200 transition active:scale-95">Outro (4)</button>
+            <button onclick="addSection('Ending', 4)" class="bg-rose-900/60 active:bg-rose-800 text-left p-2 rounded border border-rose-700 text-rose-200 transition active:scale-95">Ending (4)</button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700 pt-3">
+          <h2 class="font-bold text-xs text-slate-200 mb-1">⚡ Dynamic Cues (บีตที่ 2)</h2>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-amber-950/60 border border-amber-600/60 p-2 rounded-lg text-amber-300 font-medium">🔥 All In (พร้อมกัน)</div>
+            <div class="bg-blue-950/60 border border-blue-600/60 p-2 rounded-lg text-blue-300 font-medium">📈 Build Up</div>
+            <div class="bg-teal-950/60 border border-teal-600/60 p-2 rounded-lg text-teal-300 font-medium">💧 Down (เบาลง)</div>
+            <div class="bg-purple-950/60 border border-purple-600/60 p-2 rounded-lg text-purple-300 font-medium">🔁 Repeat (วนซ้ำ)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline (คอลัมน์ขวา) -->
+      <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <h2 class="font-bold text-xs text-slate-200">🎼 Timeline</h2>
+            <span id="currentSongTitleHeader" class="text-xs bg-slate-700 text-amber-400 px-2 py-0.5 rounded font-bold font-mono"></span>
+          </div>
+          <span class="text-[11px] text-slate-400">ลากสลับ / กดโดดท่อนได้</span>
+        </div>
+        <div id="timelineContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[500px] pr-1"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal หน้าต่างคลังเพลงกลาง -->
   <div id="songLibraryModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
       <div class="p-4 border-b border-slate-700 flex items-center justify-between">
@@ -352,6 +445,7 @@
     const cueBuffers = {};
     let isCuesLoaded = false;
     let isLoadingInProgress = false;
+    let isStageModeActive = false;
 
     const keyFrequencies = {
       "C": [130.81, 196.00, 261.63], "C#": [138.59, 207.65, 277.18], "D": [146.83, 220.00, 293.66],
@@ -360,14 +454,14 @@
       "A": [220.00, 330.00, 440.00], "Bb": [233.08, 349.23, 466.16], "B": [246.94, 369.99, 493.88]
     };
 
-    // ฝัง 5 เพลงหลักเป็นฐานข้อมูลเริ่มต้น
+    // 5 เพลงหลักเป็นฐานข้อมูลเริ่มต้น
     const initialMasterSongs = [
       {
         "id": "song_1",
         "title": "ข้าจะต้องกลัวสิ่งใด",
         "bpm": 130,
         "timeSignature": "4/4",
-        "padKey": "C",
+        "padKey": "F#",
         "transitionMode": "hold_click",
         "sections": [
           { "id": "s1", "name": "Intro", "bars": 8, "dynamicCue": "" },
@@ -382,7 +476,7 @@
           { "id": "s10", "name": "Bridge", "bars": 8, "dynamicCue": "" },
           { "id": "s11", "name": "Instrumental", "bars": 8, "dynamicCue": "" },
           { "id": "s12", "name": "Bridge", "bars": 16, "dynamicCue": "" },
-          { "id": "s13", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s13", "name": "Chorus", "bars": 8, "dynamicCue": "พร้อมกัน" },
           { "id": "s14", "name": "Ending", "bars": 4, "dynamicCue": "" }
         ]
       },
@@ -406,8 +500,8 @@
           { "id": "s10", "name": "Chorus", "bars": 8, "dynamicCue": "" },
           { "id": "s11", "name": "Instrumental", "bars": 8, "dynamicCue": "" },
           { "id": "s12", "name": "Bridge", "bars": 8, "dynamicCue": "" },
-          { "id": "s13", "name": "Bridge", "bars": 8, "dynamicCue": "" },
-          { "id": "s14", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s13", "name": "Bridge", "bars": 8, "dynamicCue": "Build Up" },
+          { "id": "s14", "name": "Chorus", "bars": 8, "dynamicCue": "พร้อมกัน" },
           { "id": "s15", "name": "Chorus", "bars": 8, "dynamicCue": "" },
           { "id": "s16", "name": "Outro", "bars": 8, "dynamicCue": "" },
           { "id": "s17", "name": "Ending", "bars": 4, "dynamicCue": "" }
@@ -437,7 +531,7 @@
           { "id": "s14", "name": "Bridge", "bars": 8, "dynamicCue": "" },
           { "id": "s15", "name": "Bridge", "bars": 8, "dynamicCue": "" },
           { "id": "s16", "name": "Solo", "bars": 8, "dynamicCue": "" },
-          { "id": "s17", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s17", "name": "Chorus", "bars": 8, "dynamicCue": "เบาลง" },
           { "id": "s18", "name": "Chorus", "bars": 8, "dynamicCue": "" },
           { "id": "s19", "name": "Chorus", "bars": 8, "dynamicCue": "" },
           { "id": "s20", "name": "Chorus", "bars": 8, "dynamicCue": "" },
@@ -499,7 +593,7 @@
       }
     ];
 
-    // โครงสร้างระบบ Weekly Setlist Manager
+    // Weekly Store
     let weeklyStore = {};
     try {
       const savedWeekly = localStorage.getItem('worship_cue_weekly_store_v1');
@@ -513,7 +607,6 @@
     let currentWeeklyKey = localStorage.getItem('worship_cue_current_week_key') || Object.keys(weeklyStore)[0];
     let setlist = weeklyStore[currentWeeklyKey] || JSON.parse(JSON.stringify(initialMasterSongs));
 
-    // คลังเพลงกลาง
     let songLibrary = [];
     try {
       const savedLib = localStorage.getItem('worship_cue_library_v1');
@@ -534,7 +627,7 @@
       localStorage.setItem('worship_cue_library_v1', JSON.stringify(songLibrary));
     }
 
-    // ฟังก์ชันจัดการ Weekly Setlist
+    // Weekly Manager Dropdown
     function renderWeeklyDropdown() {
       const dropdown = document.getElementById('weeklySetlistDropdown');
       dropdown.innerHTML = '';
@@ -584,6 +677,31 @@
       }
     }
 
+    // ฟังก์ชันสลับ Stage Mode
+    function toggleStageMode() {
+      isStageModeActive = !isStageModeActive;
+      const stageBox = document.getElementById('stageModeContainer');
+      const setupBox = document.getElementById('setupModeContainer');
+      const btnIcon = document.getElementById('stageBtnIcon');
+      const btnText = document.getElementById('stageBtnText');
+
+      if (isStageModeActive) {
+        stageBox.classList.remove('hidden');
+        stageBox.classList.add('flex');
+        setupBox.classList.add('hidden');
+        btnIcon.innerText = "⚙️";
+        btnText.innerText = "Setup View";
+        requestWakeLock();
+      } else {
+        stageBox.classList.add('hidden');
+        stageBox.classList.remove('flex');
+        setupBox.classList.remove('hidden');
+        btnIcon.innerText = "🖥️";
+        btnText.innerText = "Stage View";
+      }
+      updateUI(currentBeat);
+    }
+
     // Engine Audio
     let audioCtx = null;
     let isPlaying = false;
@@ -609,7 +727,6 @@
     let isTempoLocked = false;
     let wakeLockSentinel = null;
 
-    // Timers
     let songSeconds = 0;
     let totalSeconds = 0;
     let clockInterval = null;
@@ -639,8 +756,14 @@
       const sSec = String(songSeconds % 60).padStart(2, '0');
       const tMin = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
       const tSec = String(totalSeconds % 60).padStart(2, '0');
-      document.getElementById('songTimerDisplay').innerText = `${sMin}:${sSec}`;
-      document.getElementById('totalTimerDisplay').innerText = `${tMin}:${tSec}`;
+      
+      const sStr = `${sMin}:${sSec}`;
+      const tStr = `${tMin}:${tSec}`;
+
+      document.getElementById('songTimerDisplay').innerText = sStr;
+      document.getElementById('totalTimerDisplay').innerText = tStr;
+      document.getElementById('stageSongTimer').innerText = sStr;
+      document.getElementById('stageTotalTimer').innerText = tStr;
     }
 
     function ensureAudioContext() {
@@ -888,6 +1011,7 @@
           queuedNextSectionIndex = null;
           currentBar = 1;
           document.getElementById('jumpActiveTag').classList.add('hidden');
+          document.getElementById('stageJumpTag').classList.add('hidden');
           if (isFreePraise) {
             isFreePraise = false;
             updateFreePraiseUI();
@@ -905,7 +1029,9 @@
           currentBar = 1;
           isRepeatCurrentQueued = false;
           document.getElementById('repeatActiveTag').classList.add('hidden');
+          document.getElementById('stageRepeatTag').classList.add('hidden');
           document.getElementById('repeatSectionBtn').classList.remove('bg-amber-600', 'text-slate-950');
+          document.getElementById('stageRepeatBtn').classList.remove('bg-amber-600', 'text-slate-950');
           return;
         }
 
@@ -1008,6 +1134,7 @@
 
       startClocks();
       document.getElementById('playBtn').classList.add('opacity-50', 'pointer-events-none');
+      document.getElementById('stagePlayBtn').classList.add('opacity-50', 'pointer-events-none');
       scheduler();
       renderTimeline();
     }
@@ -1024,10 +1151,14 @@
       releaseWakeLock();
 
       document.getElementById('playBtn').classList.remove('opacity-50', 'pointer-events-none');
+      document.getElementById('stagePlayBtn').classList.remove('opacity-50', 'pointer-events-none');
       document.getElementById('repeatActiveTag').classList.add('hidden');
+      document.getElementById('stageRepeatTag').classList.add('hidden');
       document.getElementById('jumpActiveTag').classList.add('hidden');
+      document.getElementById('stageJumpTag').classList.add('hidden');
       document.getElementById('holdClickBanner').classList.add('hidden');
       document.getElementById('repeatSectionBtn').classList.remove('bg-amber-600', 'text-slate-950');
+      document.getElementById('stageRepeatBtn').classList.remove('bg-amber-600', 'text-slate-950');
       if (isFreePraise) {
         isFreePraise = false;
         updateFreePraiseUI();
@@ -1039,18 +1170,44 @@
     function updateUI(beat) {
       const curSong = setlist[currentSongIndex];
       const curSection = curSong ? curSong.sections[currentSectionIdx] : null;
-
-      if (isPreCounting) {
-        document.getElementById('displaySection').innerText = `นับนำ`;
-        document.getElementById('displayBar').innerText = `${preCountBarsRemaining} Bar`;
-      } else if (isHoldingClick) {
-        document.getElementById('displaySection').innerText = `วนคลิกค้าง`;
-        document.getElementById('displayBar').innerText = `${currentBar} / ∞`;
-      } else if (curSection) {
-        document.getElementById('displaySection').innerText = isFreePraise ? `${curSection.name} (Free)` : curSection.name;
-        document.getElementById('displayBar').innerText = isFreePraise ? `${currentBar} / ∞` : `${currentBar} / ${curSection.bars}`;
+      
+      let nextSectionName = "-";
+      if (curSong) {
+        if (currentSectionIdx < curSong.sections.length - 1) {
+          const nextSec = curSong.sections[currentSectionIdx + 1];
+          nextSectionName = nextSec.dynamicCue ? `${nextSec.name} (${nextSec.dynamicCue})` : nextSec.name;
+        } else if (currentSongIndex < setlist.length - 1) {
+          const nextSong = setlist[currentSongIndex + 1];
+          nextSectionName = `⏭ เข้าเพลง: ${nextSong.title}`;
+        } else {
+          nextSectionName = "⏹ จบเพลง";
+        }
       }
 
+      // UI ท่อน & ห้อง
+      let sectionText = "-";
+      let barText = "0 / 0";
+      if (isPreCounting) {
+        sectionText = "นับนำ";
+        barText = `${preCountBarsRemaining} Bar`;
+      } else if (isHoldingClick) {
+        sectionText = "วนคลิกค้าง";
+        barText = `${currentBar} / ∞`;
+      } else if (curSection) {
+        sectionText = isFreePraise ? `${curSection.name} (Free)` : curSection.name;
+        barText = isFreePraise ? `${currentBar} / ∞` : `${currentBar} / ${curSection.bars}`;
+      }
+
+      document.getElementById('displaySection').innerText = sectionText;
+      document.getElementById('displayBar').innerText = barText;
+
+      // อัปเดต Stage Mode View
+      document.getElementById('stageSongTitle').innerText = curSong ? curSong.title : '-';
+      document.getElementById('stageCurrentSection').innerText = sectionText;
+      document.getElementById('stageBarCount').innerText = barText;
+      document.getElementById('stageNextSection').innerText = nextSectionName;
+
+      // บีตปกติ
       for (let i = 1; i <= 4; i++) {
         const el = document.getElementById(`beat${i}`);
         if (i === beat) {
@@ -1060,20 +1217,39 @@
         } else {
           el.className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
         }
+
+        // บีตใน Stage Mode (ใหญ่พิเศษ)
+        const stageBeatEl = document.getElementById(`stageBeat${i}`);
+        if (stageBeatEl) {
+          if (i === beat) {
+            stageBeatEl.className = (i === 1)
+              ? 'h-20 sm:h-28 rounded-2xl bg-amber-400 border-2 border-amber-300 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-950 shadow-2xl scale-105 transition'
+              : 'h-20 sm:h-28 rounded-2xl bg-emerald-500 border-2 border-emerald-300 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-950 shadow-2xl scale-105 transition';
+          } else {
+            stageBeatEl.className = 'h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg';
+          }
+        }
       }
     }
 
     function updateCueDisplay(text) {
       document.getElementById('displayCue').innerText = text;
+      const stageCue = document.getElementById('stageCueVoice');
+      if (stageCue) stageCue.innerText = text;
     }
 
     function resetBeatUI() {
       for (let i = 1; i <= 4; i++) {
         document.getElementById(`beat${i}`).className = 'w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500 font-mono text-base';
+        const sEl = document.getElementById(`stageBeat${i}`);
+        if (sEl) sEl.className = 'h-20 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-black text-3xl sm:text-5xl text-slate-600 transition shadow-lg';
       }
       document.getElementById('displayCue').innerText = '-';
       document.getElementById('displayBar').innerText = '0 / 0';
       document.getElementById('displaySection').innerText = '-';
+      document.getElementById('stageCurrentSection').innerText = '-';
+      document.getElementById('stageBarCount').innerText = '0 / 0';
+      document.getElementById('stageCueVoice').innerText = '-';
     }
 
     function jumpToSectionIndex(targetIdx) {
@@ -1081,6 +1257,7 @@
       const curSong = setlist[currentSongIndex];
       const targetSec = curSong.sections[targetIdx];
       document.getElementById('jumpActiveTag').classList.remove('hidden');
+      document.getElementById('stageJumpTag').classList.remove('hidden');
       updateCueDisplay(`เตรียมโดด: ${targetSec.name}`);
       renderTimeline();
     }
@@ -1088,13 +1265,20 @@
     function toggleRepeatSection() {
       isRepeatCurrentQueued = !isRepeatCurrentQueued;
       const tag = document.getElementById('repeatActiveTag');
+      const stageTag = document.getElementById('stageRepeatTag');
       const btn = document.getElementById('repeatSectionBtn');
+      const sBtn = document.getElementById('stageRepeatBtn');
+
       if (isRepeatCurrentQueued) {
         tag.classList.remove('hidden');
+        stageTag.classList.remove('hidden');
         btn.classList.add('bg-amber-600', 'text-slate-950');
+        sBtn.classList.add('bg-amber-600', 'text-slate-950');
       } else {
         tag.classList.add('hidden');
+        stageTag.classList.add('hidden');
         btn.classList.remove('bg-amber-600', 'text-slate-950');
+        sBtn.classList.remove('bg-amber-600', 'text-slate-950');
       }
     }
 
@@ -1112,20 +1296,26 @@
 
     function updateFreePraiseUI() {
       const toggleBtn = document.getElementById('toggleFpBtn');
+      const stageFpBtn = document.getElementById('stageFpBtn');
       const exitControls = document.getElementById('fpExitControls');
       const banner = document.getElementById('fpBanner');
+      const stageFpTag = document.getElementById('stageFpTag');
 
       if (isFreePraise) {
         toggleBtn.className = "bg-amber-600 active:bg-amber-500 text-slate-950 font-black px-4 py-2 rounded-lg border border-amber-400 flex items-center gap-1.5 transition shadow-lg text-xs sm:text-sm";
         toggleBtn.innerHTML = "<span>🕊️</span> ปิด Free Praise";
+        stageFpBtn.className = "bg-amber-600 active:bg-amber-500 text-slate-950 font-black py-4 rounded-2xl border border-amber-400 flex items-center justify-center gap-1.5 shadow-xl text-sm sm:text-base active:scale-95 transition";
         banner.classList.remove('hidden');
+        stageFpTag.classList.remove('hidden');
         exitControls.classList.remove('hidden');
         exitControls.classList.add('flex');
         renderFreePraiseExitButtons();
       } else {
         toggleBtn.className = "bg-slate-700 active:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg border border-slate-500 flex items-center gap-1.5 transition text-xs sm:text-sm";
         toggleBtn.innerHTML = "<span>🕊️</span> เปิด Free Praise (F)";
+        stageFpBtn.className = "bg-slate-800 active:bg-slate-700 text-slate-200 font-bold py-4 rounded-2xl border border-slate-700 flex items-center justify-center gap-1.5 shadow-xl text-sm sm:text-base active:scale-95 transition";
         banner.classList.add('hidden');
+        stageFpTag.classList.add('hidden');
         exitControls.classList.add('hidden');
         exitControls.classList.remove('flex');
       }
@@ -1714,7 +1904,7 @@
     renderTimeline();
     updateUI(1);
 
-    // ปลดล็อกระบบเสียง
+    // ปลดล็อกเสียง
     window.addEventListener('click', () => {
       if (!isCuesLoaded) loadAllAudioCues();
     }, { once: true });
