@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Worship Cue & Click - Live Pro Master</title>
+  <title>Worship Cue & Click - Live Pro (Weekly Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -25,14 +25,14 @@
           <span id="loadStatusBadge" class="text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-normal">กำลังโหลดเสียง...</span>
           <span id="wakeLockBadge" class="hidden text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600 px-2 py-0.5 rounded-full font-normal">🔒 จอสว่าง</span>
         </h1>
-        <p class="text-[11px] text-slate-400">ระบบคิวเสียงภาษาไทย & เมโทรนอมนำร่อง (Master Pro)</p>
+        <p class="text-[11px] text-slate-400">ระบบคิวเสียงภาษาไทย & เมโทรนอมนำร่อง (Weekly Setlist Pro)</p>
       </div>
     </div>
 
-    <!-- ส่วนตั้งค่าหลัก และปุ่มแชร์ลิงก์ -->
+    <!-- ส่วนตั้งค่าหลัก -->
     <div class="flex items-center gap-2 flex-wrap text-xs">
       
-      <!-- BPM & Tap พร้อมระบบล็อก -->
+      <!-- BPM & Tap -->
       <div class="flex items-center gap-1 bg-slate-700/60 p-1 rounded-lg border border-slate-600">
         <label class="text-slate-300 ml-1 font-medium">BPM:</label>
         <input id="bpmInput" type="number" min="40" max="220" value="72" class="w-14 bg-slate-800 text-center font-bold text-amber-400 rounded px-1 py-1.5 border border-slate-600 focus:outline-none text-sm transition">
@@ -105,11 +105,6 @@
         <span class="text-slate-300 font-medium">IEM Pan</span>
       </label>
 
-      <!-- ปุ่มแชร์ลิงก์ Setlist ประจำสัปดาห์ -->
-      <button onclick="shareSetlistURL()" class="bg-indigo-600 active:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-lg transition">
-        <span>🔗</span> แชร์ Setlist
-      </button>
-
       <!-- Render WAV -->
       <button id="renderWavBtn" onclick="renderAudioWAVWithVoice()" class="bg-cyan-700 active:bg-cyan-600 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-lg transition">
         <span>💾</span> Export WAV
@@ -118,7 +113,7 @@
     </div>
   </header>
 
-  <!-- หน้าจอสถานะ Realtime & ตัวจับเวลา (Song & Total Timers) -->
+  <!-- หน้าจอสถานะ Realtime & ตัวจับเวลา -->
   <section class="bg-slate-950 px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between text-xs sm:text-sm flex-wrap gap-3">
     <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
       <span class="text-slate-400">Section:</span>
@@ -192,11 +187,34 @@
 
   <!-- Workspace 3 Columns -->
   <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
-    <!-- Setlist (คอลัมน์ซ้าย) พร้อมระบบคลังเพลงและเซฟไฟล์ -->
-    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
-      <div class="flex items-center justify-between mb-2">
+    <!-- Setlist (คอลัมน์ซ้าย) พร้อมระบบ Weekly Setlist Manager -->
+    <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col gap-2.5">
+      
+      <!-- Weekly Setlist Manager Panel -->
+      <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2 shadow-md">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+            <span>📅</span> Setlist ประจำสัปดาห์
+          </span>
+          <button onclick="saveCurrentAsWeeklySetlist()" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-2 py-0.5 rounded transition">
+            + บันทึกสัปดาห์นี้
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <select id="weeklySetlistDropdown" onchange="loadSelectedWeeklySetlist(this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs rounded-lg px-2 py-1.5 flex-1 focus:outline-none font-medium">
+            <!-- รายชื่อสัปดาห์จะถูกเรนเดอร์ที่นี่ -->
+          </select>
+          <button onclick="deleteSelectedWeeklySetlist()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 px-2 py-1.5 rounded-lg" title="ลบสัปดาห์นี้">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- แถบจัดการเพลงใน Setlist ปัจจุบัน -->
+      <div class="flex items-center justify-between pt-1">
         <h2 class="font-bold text-xs text-slate-200 flex items-center gap-1.5">
-          <span>📋</span> รายการเพลง (Setlist)
+          <span>📋</span> เพลงในลิสต์ (<span id="setlistCount">0</span> เพลง)
         </h2>
         <div class="flex items-center gap-1">
           <button onclick="addNewSong()" class="text-[11px] bg-indigo-600 active:bg-indigo-500 text-white font-medium px-2 py-1 rounded transition">+ เพลงใหม่</button>
@@ -204,20 +222,20 @@
         </div>
       </div>
 
-      <!-- แถบเครื่องมือจัดการไฟล์กลาง -->
-      <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 mb-2 text-[10px]">
+      <!-- แถบ Export/Import -->
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 text-[10px]">
         <div class="flex items-center gap-1">
-          <button onclick="exportCurrentSongJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600" title="เซฟเพลงที่เลือกเก็บไว้เป็นไฟล์เดี่ยว">💾 เซฟเพลงนี้</button>
-          <button onclick="saveCurrentSongToLibrary()" class="bg-slate-700 active:bg-slate-600 text-amber-300 px-2 py-0.5 rounded border border-slate-600" title="เพิ่มเพลงที่เลือกเข้าคลังเพลงถาวร">+ เก็บเข้าคลัง</button>
+          <button onclick="exportCurrentSongJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600" title="เซฟเพลงเดี่ยว">💾 เซฟเพลงนี้</button>
+          <button onclick="saveCurrentSongToLibrary()" class="bg-slate-700 active:bg-slate-600 text-amber-300 px-2 py-0.5 rounded border border-slate-600" title="เก็บเข้าคลัง">+ เก็บเข้าคลัง</button>
         </div>
         <div class="flex items-center gap-1">
-          <button onclick="exportSetlistJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Export ลิสต์</button>
+          <button onclick="exportSetlistJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Export</button>
           <button onclick="triggerImportJSON()" class="bg-slate-700 active:bg-slate-600 text-slate-300 px-2 py-0.5 rounded border border-slate-600">Import</button>
           <input type="file" id="importFileInput" class="hidden" accept=".json" onchange="importJSON(event)">
         </div>
       </div>
 
-      <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[500px] pr-1"></div>
+      <div id="songListContainer" class="flex-1 space-y-2 overflow-y-auto max-h-[460px] pr-1"></div>
     </div>
 
     <!-- Sections Palettes (คอลัมน์กลาง) -->
@@ -255,7 +273,7 @@
       </div>
     </div>
 
-    <!-- Timeline (คอลัมน์ขวา) พร้อมปุ่ม Jump to Section -->
+    <!-- Timeline (คอลัมน์ขวา) -->
     <div class="md:col-span-4 bg-slate-800/80 rounded-xl p-4 border border-slate-700 flex flex-col">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
@@ -293,7 +311,7 @@
   </div>
 
   <script>
-    // --- ตั้งค่าระบบ Audio Buffer แมป 24 ไฟล์ WAV จากรูปโฟลเดอร์ cues/ ---
+    // --- ตั้งค่าระบบ Audio Buffer แมป 24 ไฟล์ WAV ---
     const cueAudioMap = {
       "Intro": "cues/intro.wav",
       "Verse 1": "cues/verse1.wav",
@@ -342,87 +360,231 @@
       "A": [220.00, 330.00, 440.00], "Bb": [233.08, 349.23, 466.16], "B": [246.94, 369.99, 493.88]
     };
 
-    const defaultSetlist = [
+    // ฝัง 5 เพลงหลักเป็นฐานข้อมูลเริ่มต้น
+    const initialMasterSongs = [
       {
-        id: "song_1",
-        title: "Way Maker",
-        bpm: 68,
-        timeSignature: "4/4",
-        padKey: "E",
-        transitionMode: "hold_click",
-        sections: [
-          { id: "s1", name: "Intro", bars: 4, dynamicCue: "" },
-          { id: "s2", name: "Verse 1", bars: 8, dynamicCue: "" },
-          { id: "s3", name: "Chorus", bars: 8, dynamicCue: "พร้อมกัน" },
-          { id: "s4", name: "Outro", bars: 4, dynamicCue: "" },
-          { id: "s5", name: "Ending", bars: 4, dynamicCue: "" }
+        "id": "song_1",
+        "title": "ข้าจะต้องกลัวสิ่งใด",
+        "bpm": 130,
+        "timeSignature": "4/4",
+        "padKey": "C",
+        "transitionMode": "hold_click",
+        "sections": [
+          { "id": "s1", "name": "Intro", "bars": 8, "dynamicCue": "" },
+          { "id": "s2", "name": "Verse 1", "bars": 8, "dynamicCue": "" },
+          { "id": "s3", "name": "Verse 2", "bars": 8, "dynamicCue": "" },
+          { "id": "s4", "name": "Chorus", "bars": 8, "dynamicCue": "พร้อมกัน" },
+          { "id": "s5", "name": "Interlude", "bars": 4, "dynamicCue": "" },
+          { "id": "s6", "name": "Verse 3", "bars": 8, "dynamicCue": "" },
+          { "id": "s7", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s8", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s9", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s10", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s11", "name": "Instrumental", "bars": 8, "dynamicCue": "" },
+          { "id": "s12", "name": "Bridge", "bars": 16, "dynamicCue": "" },
+          { "id": "s13", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s14", "name": "Ending", "bars": 4, "dynamicCue": "" }
         ]
       },
       {
-        id: "song_2",
-        title: "พระเจ้ายิ่งใหญ่ (Goodness of God)",
-        bpm: 72,
-        timeSignature: "4/4",
-        padKey: "G",
-        transitionMode: "stop",
-        sections: [
-          { id: "s6", name: "Intro", bars: 4, dynamicCue: "" },
-          { id: "s7", name: "Verse 1", bars: 8, dynamicCue: "" },
-          { id: "s8", name: "Chorus", bars: 8, dynamicCue: "Build Up" },
-          { id: "s9", name: "Ending", bars: 4, dynamicCue: "" }
+        "id": "song_2",
+        "title": "ยาห์เวห์ (YAHWEH)",
+        "bpm": 132,
+        "timeSignature": "4/4",
+        "padKey": "B",
+        "transitionMode": "stop",
+        "sections": [
+          { "id": "s1", "name": "Intro", "bars": 8, "dynamicCue": "" },
+          { "id": "s2", "name": "Verse 1", "bars": 8, "dynamicCue": "" },
+          { "id": "s3", "name": "Verse 2", "bars": 8, "dynamicCue": "" },
+          { "id": "s4", "name": "Pre-Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s5", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s6", "name": "Interlude", "bars": 4, "dynamicCue": "" },
+          { "id": "s7", "name": "Verse 3", "bars": 8, "dynamicCue": "" },
+          { "id": "s8", "name": "Pre-Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s9", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s10", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s11", "name": "Instrumental", "bars": 8, "dynamicCue": "" },
+          { "id": "s12", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s13", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s14", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s15", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s16", "name": "Outro", "bars": 8, "dynamicCue": "" },
+          { "id": "s17", "name": "Ending", "bars": 4, "dynamicCue": "" }
+        ]
+      },
+      {
+        "id": "song_3",
+        "title": "รักเเละสัตย์ซื่อ - Bright Romance",
+        "bpm": 69,
+        "timeSignature": "4/4",
+        "padKey": "B",
+        "transitionMode": "stop",
+        "sections": [
+          { "id": "s1", "name": "Intro", "bars": 4, "dynamicCue": "" },
+          { "id": "s2", "name": "Verse 1", "bars": 8, "dynamicCue": "" },
+          { "id": "s3", "name": "Verse 2", "bars": 8, "dynamicCue": "" },
+          { "id": "s4", "name": "Pre-Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s5", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s6", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s7", "name": "Interlude", "bars": 4, "dynamicCue": "" },
+          { "id": "s8", "name": "Verse 3", "bars": 8, "dynamicCue": "" },
+          { "id": "s9", "name": "Verse 4", "bars": 8, "dynamicCue": "" },
+          { "id": "s10", "name": "Pre-Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s11", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s12", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s13", "name": "Instrumental", "bars": 4, "dynamicCue": "" },
+          { "id": "s14", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s15", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s16", "name": "Solo", "bars": 8, "dynamicCue": "" },
+          { "id": "s17", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s18", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s19", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s20", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s21", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s22", "name": "Tag", "bars": 4, "dynamicCue": "" },
+          { "id": "s23", "name": "Outro", "bars": 4, "dynamicCue": "" },
+          { "id": "s24", "name": "Ending", "bars": 4, "dynamicCue": "" }
+        ]
+      },
+      {
+        "id": "song_4",
+        "title": "มงกุฎชัยเป็นของพระองค์ - True Worshipers",
+        "bpm": 75,
+        "timeSignature": "4/4",
+        "padKey": "C",
+        "transitionMode": "stop",
+        "sections": [
+          { "id": "s1", "name": "Intro", "bars": 4, "dynamicCue": "" },
+          { "id": "s2", "name": "Verse 1", "bars": 8, "dynamicCue": "" },
+          { "id": "s3", "name": "Verse 2", "bars": 8, "dynamicCue": "" },
+          { "id": "s4", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s5", "name": "Interlude", "bars": 4, "dynamicCue": "" },
+          { "id": "s6", "name": "Verse 3", "bars": 8, "dynamicCue": "" },
+          { "id": "s7", "name": "Verse 4", "bars": 8, "dynamicCue": "" },
+          { "id": "s8", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s9", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s10", "name": "Instrumental", "bars": 4, "dynamicCue": "" },
+          { "id": "s11", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s12", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s13", "name": "Bridge", "bars": 8, "dynamicCue": "" },
+          { "id": "s14", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s15", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s16", "name": "Tag", "bars": 4, "dynamicCue": "" },
+          { "id": "s17", "name": "Ending", "bars": 4, "dynamicCue": "" }
+        ]
+      },
+      {
+        "id": "song_5",
+        "title": "พรุ่งนี้ (Tomorrow) - Grace",
+        "bpm": 66,
+        "timeSignature": "4/4",
+        "padKey": "F",
+        "transitionMode": "stop",
+        "sections": [
+          { "id": "s1", "name": "Intro", "bars": 4, "dynamicCue": "" },
+          { "id": "s2", "name": "Verse 1", "bars": 8, "dynamicCue": "" },
+          { "id": "s3", "name": "Verse 2", "bars": 8, "dynamicCue": "" },
+          { "id": "s4", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s5", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s6", "name": "Interlude", "bars": 4, "dynamicCue": "" },
+          { "id": "s7", "name": "Verse 3", "bars": 8, "dynamicCue": "" },
+          { "id": "s8", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s9", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s10", "name": "Instrumental", "bars": 8, "dynamicCue": "" },
+          { "id": "s11", "name": "Chorus", "bars": 8, "dynamicCue": "" },
+          { "id": "s12", "name": "Outro", "bars": 4, "dynamicCue": "" },
+          { "id": "s13", "name": "Ending", "bars": 4, "dynamicCue": "" }
         ]
       }
     ];
 
-    // --- ตรวจสอบการโหลดข้อมูลผ่าน URL Parameters (แชร์ Setlist สัปดาห์นี้) ---
-    let setlist = [];
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedData = urlParams.get('setlist');
-
-    if (sharedData) {
-      try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
-        if (Array.isArray(decoded) && decoded.length > 0) {
-          setlist = decoded;
-          localStorage.setItem('worship_cue_setlist_master_v1', JSON.stringify(setlist));
-          history.replaceState(null, '', window.location.pathname);
-        }
-      } catch(e) {
-        console.error('ถอดรหัส URL ลิสต์เพลงผิดพลาด', e);
-      }
+    // โครงสร้างระบบ Weekly Setlist Manager
+    let weeklyStore = {};
+    try {
+      const savedWeekly = localStorage.getItem('worship_cue_weekly_store_v1');
+      weeklyStore = savedWeekly ? JSON.parse(savedWeekly) : {
+        "สัปดาห์ปัจจุบัน (Default)": JSON.parse(JSON.stringify(initialMasterSongs))
+      };
+    } catch(e) {
+      weeklyStore = { "สัปดาห์ปัจจุบัน (Default)": JSON.parse(JSON.stringify(initialMasterSongs)) };
     }
 
-    if (!setlist.length) {
-      try {
-        const saved = localStorage.getItem('worship_cue_setlist_master_v1');
-        setlist = saved ? JSON.parse(saved) : defaultSetlist;
-      } catch(e) {
-        setlist = defaultSetlist;
-      }
-    }
+    let currentWeeklyKey = localStorage.getItem('worship_cue_current_week_key') || Object.keys(weeklyStore)[0];
+    let setlist = weeklyStore[currentWeeklyKey] || JSON.parse(JSON.stringify(initialMasterSongs));
 
-    // โหลดคลังเพลงส่วนกลาง (Master Library)
+    // คลังเพลงกลาง
     let songLibrary = [];
     try {
       const savedLib = localStorage.getItem('worship_cue_library_v1');
-      songLibrary = savedLib ? JSON.parse(savedLib) : JSON.parse(JSON.stringify(defaultSetlist));
+      songLibrary = savedLib ? JSON.parse(savedLib) : JSON.parse(JSON.stringify(initialMasterSongs));
     } catch(e) {
-      songLibrary = JSON.parse(JSON.stringify(defaultSetlist));
+      songLibrary = JSON.parse(JSON.stringify(initialMasterSongs));
     }
 
     let currentSongIndex = 0;
-    function saveToStorage() {
-      try {
-        localStorage.setItem('worship_cue_setlist_master_v1', JSON.stringify(setlist));
-      } catch(e) {}
+
+    function saveCurrentSetlistToActiveWeek() {
+      weeklyStore[currentWeeklyKey] = JSON.parse(JSON.stringify(setlist));
+      localStorage.setItem('worship_cue_weekly_store_v1', JSON.stringify(weeklyStore));
+      localStorage.setItem('worship_cue_current_week_key', currentWeeklyKey);
     }
 
     function saveLibraryToStorage() {
-      try {
-        localStorage.setItem('worship_cue_library_v1', JSON.stringify(songLibrary));
-      } catch(e) {}
+      localStorage.setItem('worship_cue_library_v1', JSON.stringify(songLibrary));
     }
 
+    // ฟังก์ชันจัดการ Weekly Setlist
+    function renderWeeklyDropdown() {
+      const dropdown = document.getElementById('weeklySetlistDropdown');
+      dropdown.innerHTML = '';
+      const keys = Object.keys(weeklyStore);
+
+      keys.forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.innerText = k;
+        if (k === currentWeeklyKey) opt.selected = true;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    function saveCurrentAsWeeklySetlist() {
+      const name = prompt("ตั้งชื่อ Setlist ประจำสัปดาห์ใหม่:", `อาทิตย์ที่ ${new Date().toLocaleDateString('th-TH')}`);
+      if (!name) return;
+      currentWeeklyKey = name.trim();
+      saveCurrentSetlistToActiveWeek();
+      renderWeeklyDropdown();
+      alert(`บันทึก Setlist "${currentWeeklyKey}" เรียบร้อยแล้ว`);
+    }
+
+    function loadSelectedWeeklySetlist(weekKey) {
+      if (!weeklyStore[weekKey]) return;
+      if (isPlaying) stopPlayback();
+      currentWeeklyKey = weekKey;
+      setlist = JSON.parse(JSON.stringify(weeklyStore[weekKey]));
+      localStorage.setItem('worship_cue_current_week_key', currentWeeklyKey);
+      currentSongIndex = 0;
+      renderSetlist();
+      renderTimeline();
+      updateUI(1);
+    }
+
+    function deleteSelectedWeeklySetlist() {
+      const keys = Object.keys(weeklyStore);
+      if (keys.length <= 1) return alert('ต้องมี Setlist ในระบบอย่างน้อย 1 สัปดาห์');
+      if (confirm(`ต้องการลบ Setlist "${currentWeeklyKey}" หรือไม่?`)) {
+        delete weeklyStore[currentWeeklyKey];
+        currentWeeklyKey = Object.keys(weeklyStore)[0];
+        setlist = JSON.parse(JSON.stringify(weeklyStore[currentWeeklyKey]));
+        localStorage.setItem('worship_cue_weekly_store_v1', JSON.stringify(weeklyStore));
+        localStorage.setItem('worship_cue_current_week_key', currentWeeklyKey);
+        renderWeeklyDropdown();
+        loadSelectedWeeklySetlist(currentWeeklyKey);
+      }
+    }
+
+    // Engine Audio
     let audioCtx = null;
     let isPlaying = false;
     let isPreCounting = false;
@@ -447,7 +609,7 @@
     let isTempoLocked = false;
     let wakeLockSentinel = null;
 
-    // ระบบจับเวลา (Timers)
+    // Timers
     let songSeconds = 0;
     let totalSeconds = 0;
     let clockInterval = null;
@@ -490,7 +652,6 @@
       }
     }
 
-    // โหลดไฟล์ WAV ทั้งหมดเข้า RAM
     async function loadAllAudioCues() {
       if (isLoadingInProgress || isCuesLoaded) return;
       isLoadingInProgress = true;
@@ -530,7 +691,6 @@
       }
     }
 
-    // ฟังก์ชันเล่นคิวเสียง WAV ออกหูขวา (IEM Split)
     function playBufferCue(key, time) {
       const buffer = cueBuffers[key];
       const cueVol = parseFloat(document.getElementById('cueVolumeSlider').value) || 1.0;
@@ -544,7 +704,7 @@
       const splitIEM = document.getElementById('splitIEMCheckbox').checked;
       if (splitIEM && typeof audioCtx.createStereoPanner === 'function') {
         const panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(1.0, time); // เสียงคิวออกหูขวา 100%
+        panner.pan.setValueAtTime(1.0, time);
         source.connect(gain);
         gain.connect(panner);
         panner.connect(audioCtx.destination);
@@ -556,7 +716,6 @@
       source.start(time);
     }
 
-    // ฟังก์ชันเคาะคลิกเมโทรนอม ออกหูซ้าย (IEM Split)
     function playClickSound(time, isAccent, splitIEM) {
       const clickVol = parseFloat(document.getElementById('clickVolumeSlider').value) || 0.8;
       if (clickVol <= 0.01) return;
@@ -571,7 +730,7 @@
 
       if (splitIEM && typeof audioCtx.createStereoPanner === 'function') {
         const panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(-1.0, time); // เสียงคลิกออกหูซ้าย 100%
+        panner.pan.setValueAtTime(-1.0, time);
         osc.connect(gain);
         gain.connect(panner);
         panner.connect(audioCtx.destination);
@@ -610,14 +769,12 @@
         const isLastSectionOfSong = (currentSectionIdx === curSong.sections.length - 1);
         const hasNextSong = (currentSongIndex < setlist.length - 1);
 
-        // 1. กระโดดข้ามท่อนทันที (Jump to Section ฉุกเฉิน)
         if (isLastBarOfSection && queuedNextSectionIndex !== null && !isFreePraise) {
           const targetSec = curSong.sections[queuedNextSectionIndex];
           executeCue(beatNumber, targetSec, time);
           return;
         }
 
-        // 2. จบเพลง
         const isSongEnding = isLastBarOfSection && isLastSectionOfSong && (!hasNextSong || curSong.transitionMode === 'stop');
         if (isSongEnding && !isRepeatCurrentQueued && !isNextSongQueued) {
           if (beatNumber === 1) {
@@ -630,7 +787,6 @@
           return;
         }
 
-        // 3. ข้ามไปเพลงถัดไป
         if (isNextSongQueued || (isLastBarOfSection && isLastSectionOfSong && hasNextSong && curSong.transitionMode === 'seamless')) {
           const nextSong = setlist[currentSongIndex + 1];
           const nextSongFirstSec = nextSong.sections[0];
@@ -644,7 +800,6 @@
           return;
         }
 
-        // 4. วนท่อนเดิม
         if (isLastBarOfSection && isRepeatCurrentQueued) {
           if (beatNumber === 1) {
             playBufferCue(curSection.name, time);
@@ -659,14 +814,12 @@
           return;
         }
 
-        // 5. Free Praise
         if (isFreePraise && queuedNextSectionIndex !== null) {
           const targetSec = curSong.sections[queuedNextSectionIndex];
           executeCue(beatNumber, targetSec, time);
           return;
         }
 
-        // 6. เปลี่ยนท่อนตามลำดับปกติ
         if (!isFreePraise && !isHoldingClick && isLastBarOfSection && !isLastSectionOfSong) {
           const nextSection = curSong.sections[currentSectionIdx + 1];
           executeCue(beatNumber, nextSection, time);
@@ -730,7 +883,6 @@
           return;
         }
 
-        // โดดข้ามท่อนฉุกเฉิน หรือออกจาก Free Praise
         if (queuedNextSectionIndex !== null) {
           currentSectionIdx = queuedNextSectionIndex;
           queuedNextSectionIndex = null;
@@ -924,7 +1076,6 @@
       document.getElementById('displaySection').innerText = '-';
     }
 
-    // --- กระโดดข้ามท่อนฉุกเฉิน (Jump to Section) ---
     function jumpToSectionIndex(targetIdx) {
       queuedNextSectionIndex = targetIdx;
       const curSong = setlist[currentSongIndex];
@@ -1001,6 +1152,7 @@
     function renderSetlist() {
       const container = document.getElementById('songListContainer');
       container.innerHTML = '';
+      document.getElementById('setlistCount').innerText = setlist.length;
 
       setlist.forEach((song, idx) => {
         const isActive = idx === currentSongIndex;
@@ -1043,7 +1195,7 @@
 
     function updateSongTransition(idx, mode) {
       setlist[idx].transitionMode = mode;
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
     }
 
     function selectSong(idx, stopCurrent = true) {
@@ -1112,24 +1264,24 @@
         bars: bars,
         dynamicCue: ""
       });
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
       renderTimeline();
     }
 
     function removeSection(idx) {
       setlist[currentSongIndex].sections.splice(idx, 1);
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
       renderTimeline();
     }
 
     function updateSectionBars(idx, val) {
       setlist[currentSongIndex].sections[idx].bars = parseInt(val) || 4;
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
     }
 
     function updateDynamicCue(idx, val) {
       setlist[currentSongIndex].sections[idx].dynamicCue = val;
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
     }
 
     new Sortable(document.getElementById('timelineContainer'), {
@@ -1140,7 +1292,7 @@
         const curSong = setlist[currentSongIndex];
         const movedItem = curSong.sections.splice(evt.oldIndex, 1)[0];
         curSong.sections.splice(evt.newIndex, 0, movedItem);
-        saveToStorage();
+        saveCurrentSetlistToActiveWeek();
       }
     });
 
@@ -1162,7 +1314,7 @@
         ]
       };
       setlist.push(newSong);
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
       selectSong(setlist.length - 1);
     }
 
@@ -1171,30 +1323,13 @@
       if (confirm(`ต้องการลบเพลง "${setlist[idx].title}" หรือไม่?`)) {
         setlist.splice(idx, 1);
         currentSongIndex = Math.max(0, currentSongIndex - 1);
-        saveToStorage();
+        saveCurrentSetlistToActiveWeek();
         renderSetlist();
         renderTimeline();
       }
     }
 
-    // --- 1. ระบบแชร์ลิงก์ Setlist ประจำสัปดาห์ (URL Data Share) ---
-    function shareSetlistURL() {
-      try {
-        const jsonStr = JSON.stringify(setlist);
-        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
-        const fullURL = `${window.location.origin}${window.location.pathname}?setlist=${encoded}`;
-        
-        navigator.clipboard.writeText(fullURL).then(() => {
-          alert('🔗 คัดลอกลิงก์ Setlist สัปดาห์นี้แล้ว!\nส่งลิงก์นี้เข้า LINE กลุ่มได้ทันที คนอื่นเปิดจะเห็นเพลงเดียวกันทั้งหมด');
-        }).catch(() => {
-          prompt('คัดลอกลิงก์ Setlist ด้านล่างนี้:', fullURL);
-        });
-      } catch(err) {
-        alert('เกิดข้อผิดพลาดในการสร้างลิงก์แชร์');
-      }
-    }
-
-    // --- 2. ระบบคลังเพลงกลาง (Song Library Logic) ---
+    // Library Functions
     function openSongLibraryModal() {
       document.getElementById('songLibraryModal').classList.remove('hidden');
       renderLibrarySongs();
@@ -1254,7 +1389,7 @@
       const songToAdd = JSON.parse(JSON.stringify(songLibrary[libIdx]));
       songToAdd.id = "song_" + Date.now();
       setlist.push(songToAdd);
-      saveToStorage();
+      saveCurrentSetlistToActiveWeek();
       renderSetlist();
       selectSong(setlist.length - 1);
       alert(`ดึงเพลง "${songToAdd.title}" เข้า Setlist เรียบร้อย`);
@@ -1268,7 +1403,7 @@
       }
     }
 
-    // --- 3. บันทึกและดึงไฟล์กลาง (Export/Import Song & Setlist) ---
+    // Export/Import
     function exportCurrentSongJSON() {
       const cur = setlist[currentSongIndex];
       if (!cur) return;
@@ -1278,7 +1413,7 @@
 
     function exportSetlistJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(setlist, null, 2));
-      downloadAnchorHelper(dataStr, `worship_setlist_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchorHelper(dataStr, `worship_setlist_${currentWeeklyKey.replace(/\s+/g, '_')}.json`);
     }
 
     function exportLibraryJSON() {
@@ -1307,14 +1442,14 @@
           if (Array.isArray(imported)) {
             setlist = imported;
             currentSongIndex = 0;
-            saveToStorage();
+            saveCurrentSetlistToActiveWeek();
             renderSetlist();
             renderTimeline();
             alert('นำเข้า Setlist สำเร็จ');
           } else if (imported.title && Array.isArray(imported.sections)) {
             imported.id = "song_" + Date.now();
             setlist.push(imported);
-            saveToStorage();
+            saveCurrentSetlistToActiveWeek();
             renderSetlist();
             selectSong(setlist.length - 1);
             alert(`นำเข้าเพลง "${imported.title}" เข้า Setlist สำเร็จ`);
@@ -1324,7 +1459,7 @@
       reader.readAsText(file);
     }
 
-    // --- Bluetooth Foot Pedal & Keyboard Controls ---
+    // Foot Pedal & Keyboard
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       if (e.code === 'Space') {
@@ -1335,10 +1470,8 @@
       } else if (e.code === 'KeyR') {
         if (isPlaying) toggleRepeatSection();
       } else if (e.code === 'ArrowRight' || e.code === 'PageDown') {
-        // แป้นเหยียบข้ามเพลง
         if (currentSongIndex < setlist.length - 1) selectSong(currentSongIndex + 1);
       } else if (e.code === 'ArrowLeft' || e.code === 'PageUp') {
-        // แป้นเหยียบย้อนเพลง
         if (currentSongIndex > 0) selectSong(currentSongIndex - 1);
       }
     });
@@ -1413,7 +1546,7 @@
         document.getElementById('bpmInput').value = bpm;
         if (setlist[currentSongIndex]) {
           setlist[currentSongIndex].bpm = bpm;
-          saveToStorage();
+          saveCurrentSetlistToActiveWeek();
           renderSetlist();
         }
       }
@@ -1464,7 +1597,7 @@
       }
     }
 
-    // Export WAV Track
+    // Export WAV
     async function renderAudioWAVWithVoice() {
       const curSong = setlist[currentSongIndex];
       if (!curSong || !curSong.sections.length) return alert('ไม่มีโครงสร้างเพลงให้ Render');
@@ -1565,22 +1698,23 @@
     document.getElementById('bpmInput').onchange = (e) => {
       if (setlist[currentSongIndex]) {
         setlist[currentSongIndex].bpm = parseInt(e.target.value) || 72;
-        saveToStorage();
+        saveCurrentSetlistToActiveWeek();
       }
     };
     document.getElementById('timeSignatureSelect').onchange = (e) => {
       if (setlist[currentSongIndex]) {
         setlist[currentSongIndex].timeSignature = e.target.value;
-        saveToStorage();
+        saveCurrentSetlistToActiveWeek();
       }
     };
 
     // Render เริ่มต้น
+    renderWeeklyDropdown();
     renderSetlist();
     renderTimeline();
     updateUI(1);
 
-    // ปลดล็อกระบบเสียงเมื่อแตะหน้าจอครั้งแรก
+    // ปลดล็อกระบบเสียง
     window.addEventListener('click', () => {
       if (!isCuesLoaded) loadAllAudioCues();
     }, { once: true });
