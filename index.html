@@ -398,7 +398,7 @@
               <select id="weeklySetlistDropdown" onchange="loadSelectedWeeklySetlist(this.value)" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs rounded-lg px-2 py-1.5 flex-1 focus:outline-none font-medium">
               </select>
               <button onclick="deleteSelectedWeeklySetlist()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 px-2 py-1.5 rounded-lg" title="ลบสัปดาห์นี้">
-                🗑️
+                🗑️️
               </button>
             </div>
           </div>
@@ -695,8 +695,6 @@
     // ==========================================
     // 🌟 ระบบ BACKUP & RESTORE เต็มรูปแบบ 🌟
     // ==========================================
-
-    // 1. สำรองข้อมูลทั้งหมด (Master Library + Weekly Store + All Settings)
     function exportAllFullBackupJSON() {
       const fullBackupPayload = {
         app: "Worship Cue & Click - Stage Pro HGC",
@@ -752,7 +750,6 @@
       event.target.value = '';
     }
 
-    // 2. สำรองเฉพาะคลังเพลงแม่แบบ (Master Library Only)
     function exportMasterLibraryJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(masterLibrary, null, 2));
       const dateName = new Date().toISOString().slice(0, 10);
@@ -789,7 +786,6 @@
       event.target.value = '';
     }
 
-    // 3. สำรองเฉพาะ Setlist สัปดาห์ปัจจุบัน
     function exportSetlistJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(liveSetlist, null, 2));
       downloadAnchorHelper(dataStr, `HGC_Setlist_${currentWeeklyKey.replace(/\s+/g, '_')}.json`);
@@ -2021,7 +2017,9 @@
       }
     }
 
-    // Export WAV Track
+    // ==========================================
+    // 🌟 ระบบ EXPORT WAV พร้อมเสียงคิวไทยและแยกแพน 🌟
+    // ==========================================
     async function renderAudioWAVWithVoice() {
       const curSong = liveSetlist[currentLiveSongIndex];
       if (!curSong || !curSong.sections.length) return alert('ไม่มีโครงสร้างเพลงให้ Render');
@@ -2032,36 +2030,116 @@
       btn.classList.add('opacity-50', 'pointer-events-none');
 
       try {
+        ensureAudioContext();
+        if (!isCuesLoaded) await loadAllAudioCues();
+
         const bpm = curSong.bpm || 72;
         const secondsPerBeat = 60.0 / bpm;
         const totalBars = curSong.sections.reduce((acc, s) => acc + s.bars, 0);
-        const totalDuration = (totalBars * 4 * secondsPerBeat) + 2.5;
+        // เผื่อเวลาเสียงกังวานและนับนำ 1 ห้อง
+        const totalDuration = ((totalBars + 1) * 4 * secondsPerBeat) + 3.0;
         const sampleRate = 44100;
 
-        const offlineCtx = new OfflineAudioContext(2, sampleRate * totalDuration, sampleRate);
+        const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * totalDuration), sampleRate);
+        const splitIEM = document.getElementById('splitIEMCheckbox').checked;
+        const clickVol = parseFloat(document.getElementById('clickVolumeSlider').value) || 0.8;
+        const cueVol = parseFloat(document.getElementById('cueVolumeSlider').value) || 1.0;
+
+        function scheduleOfflineClick(time, isAccent) {
+          if (clickVol <= 0.01) return;
+          const osc = offlineCtx.createOscillator();
+          const gain = offlineCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(isAccent ? 2200 : 1200, time);
+          gain.gain.setValueAtTime(clickVol, time);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+          if (splitIEM && typeof offlineCtx.createStereoPanner === 'function') {
+            const panner = offlineCtx.createStereoPanner();
+            panner.pan.setValueAtTime(-1.0, time); // ซ้าย 100%
+            osc.connect(gain);
+            gain.connect(panner);
+            panner.connect(offlineCtx.destination);
+          } else {
+            osc.connect(gain);
+            gain.connect(offlineCtx.destination);
+          }
+          osc.start(time);
+          osc.stop(time + 0.045);
+        }
+
+        function scheduleOfflineCue(key, time) {
+          const buffer = cueBuffers[key];
+          if (!buffer || cueVol <= 0.01) return;
+
+          const source = offlineCtx.createBufferSource();
+          const gain = offlineCtx.createGain();
+          source.buffer = buffer;
+          gain.gain.setValueAtTime(cueVol, time);
+
+          if (splitIEM && typeof offlineCtx.createStereoPanner === 'function') {
+            const panner = offlineCtx.createStereoPanner();
+            panner.pan.setValueAtTime(1.0, time); // ขวา 100%
+            source.connect(gain);
+            gain.connect(panner);
+            panner.connect(offlineCtx.destination);
+          } else {
+            source.connect(gain);
+            gain.connect(offlineCtx.destination);
+          }
+          source.start(time);
+        }
+
         let scheduleTime = 0.5;
 
+        // 1. ห้องนับนำเข้าเพลง (Pre-count 1 Bar)
+        const firstSec = curSong.sections[0];
+        for (let beat = 1; beat <= 4; beat++) {
+          scheduleOfflineClick(scheduleTime, beat === 1);
+          if (beat === 1) {
+            scheduleOfflineCue(firstSec.name, scheduleTime);
+          } else {
+            scheduleOfflineCue(String(beat), scheduleTime);
+          }
+          scheduleTime += secondsPerBeat;
+        }
+
+        // 2. ลูปตามท่อนเพลงทั้งหมดในโครงสร้าง
         for (let sIdx = 0; sIdx < curSong.sections.length; sIdx++) {
           const sec = curSong.sections[sIdx];
+          const isLastSection = (sIdx === curSong.sections.length - 1);
+          const nextSec = !isLastSection ? curSong.sections[sIdx + 1] : null;
+
           for (let b = 1; b <= sec.bars; b++) {
+            const isLastBarOfSection = (b === sec.bars);
+
             for (let beat = 1; beat <= 4; beat++) {
-              const isAccent = (beat === 1);
-              const clickOsc = offlineCtx.createOscillator();
-              const clickGain = offlineCtx.createGain();
-              const clickPanner = offlineCtx.createStereoPanner();
+              scheduleOfflineClick(scheduleTime, beat === 1);
 
-              clickOsc.type = 'sine';
-              clickOsc.frequency.setValueAtTime(isAccent ? 2200 : 1200, scheduleTime);
-              clickGain.gain.setValueAtTime(0.8, scheduleTime);
-              clickGain.gain.exponentialRampToValueAtTime(0.001, scheduleTime + 0.04);
-              clickPanner.pan.setValueAtTime(-1.0, scheduleTime);
+              if (isLastBarOfSection) {
+                if (!isLastSection && nextSec) {
+                  if (beat === 1) {
+                    scheduleOfflineCue(nextSec.name, scheduleTime);
+                  } else if (beat === 2) {
+                    if (nextSec.dynamicCue) {
+                      scheduleOfflineCue(nextSec.dynamicCue, scheduleTime);
+                    } else {
+                      scheduleOfflineCue("2", scheduleTime);
+                    }
+                  } else if (beat === 3) {
+                    scheduleOfflineCue("3", scheduleTime);
+                  } else if (beat === 4) {
+                    scheduleOfflineCue("4", scheduleTime);
+                  }
+                } else if (isLastSection) {
+                  if (beat === 1) {
+                    scheduleOfflineCue("จบเพลง", scheduleTime);
+                  } else {
+                    scheduleOfflineCue(String(beat), scheduleTime);
+                  }
+                }
+              }
 
-              clickOsc.connect(clickGain);
-              clickGain.connect(clickPanner);
-              clickPanner.connect(offlineCtx.destination);
-
-              clickOsc.start(scheduleTime);
-              clickOsc.stop(scheduleTime + 0.045);
               scheduleTime += secondsPerBeat;
             }
           }
@@ -2078,8 +2156,10 @@
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
+
       } catch (err) {
-        alert('เกิดข้อผิดพลาดในการ Render');
+        console.error(err);
+        alert('เกิดข้อผิดพลาดในการ Render: ' + err.message);
       } finally {
         btn.innerHTML = originalText;
         btn.classList.remove('opacity-50', 'pointer-events-none');
